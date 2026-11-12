@@ -1,0 +1,1573 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tideline</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a nautical-chart scroll story. A sticky 3D coastal diorama sits behind the opening chapters while the sea rises;
+   then the record, the forecast, an interactive defence simulator and the comparison follow on one column grid. */
+:root {
+  --bg: #edf3f2;            /* chart paper, sea-mist */
+  --panel: #fbfdfd;
+  --panel-2: #e4eeec;
+  --ink: #0b2630;           /* deep channel ink */
+  --ink-2: #3c5862;
+  --muted: #687f87;
+  --rule: #cfdcda;
+  --grid: #dde7e5;
+  --axis: #b2c3c1;
+  --tide: #0d7a84;          /* accent: tide teal */
+  --tide-ink: #ffffff;
+  --flood: #d4473a;         /* flood coral */
+  --mangrove: #2c7a4b;
+  --sand: #b98f4e;
+  --sky-top: #cfe4e7; --sky-bot: #edf3f2;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #6250d6; --s8: #e34948;
+  --good: #0a7d0a; --warn: #a56f00; --crit: #c23629;
+  --chip-good: #def2e0; --chip-warn: #f8ecd2; --chip-crit: #f8dfdb;
+  --glass: rgba(251, 253, 253, 0.82);
+  --shadow: 0 1px 2px rgba(11, 38, 48, .06), 0 12px 32px rgba(11, 38, 48, .08);
+  --f-display: "Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-data: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --gl: max(16px, env(safe-area-inset-left, 0px));
+  --gr: max(16px, env(safe-area-inset-right, 0px));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #051419; --panel: #0a1f26; --panel-2: #0f2a33; --ink: #e2efee; --ink-2: #a8c0c2; --muted: #7b9397;
+    --rule: #17363f; --grid: #122f38; --axis: #24454e; --tide: #29b1b7; --tide-ink: #03181c; --flood: #ef6a5a;
+    --mangrove: #4eae74; --sand: #d0aa6a; --sky-top: #0b2a35; --sky-bot: #051419;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #23a523; --s7: #9085e9; --s8: #e66767;
+    --good: #3bc33b; --warn: #e3a72a; --crit: #f27a6c; --chip-good: #11301b; --chip-warn: #33280f; --chip-crit: #3b1a16;
+    --glass: rgba(10, 31, 38, 0.82); --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.4);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #051419; --panel: #0a1f26; --panel-2: #0f2a33; --ink: #e2efee; --ink-2: #a8c0c2; --muted: #7b9397;
+  --rule: #17363f; --grid: #122f38; --axis: #24454e; --tide: #29b1b7; --tide-ink: #03181c; --flood: #ef6a5a;
+  --mangrove: #4eae74; --sand: #d0aa6a; --sky-top: #0b2a35; --sky-bot: #051419;
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181; --s6: #23a523; --s7: #9085e9; --s8: #e66767;
+  --good: #3bc33b; --warn: #e3a72a; --crit: #f27a6c; --chip-good: #11301b; --chip-warn: #33280f; --chip-crit: #3b1a16;
+  --glass: rgba(10, 31, 38, 0.82); --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px rgba(0,0,0,.4);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15.5px; line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; }
+h2 { font-size: clamp(30px, 4.4vw, 54px); font-weight: 750; font-variation-settings: "wdth" 80; line-height: 1; letter-spacing: -0.02em; }
+h3 { font-size: 18px; font-weight: 650; letter-spacing: -0.005em; }
+p { margin: 0; }
+a { color: var(--tide); }
+:focus-visible { outline: 2px solid var(--tide); outline-offset: 2px; border-radius: 4px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: var(--gl); padding-right: var(--gr); }
+.eyebrow { font-family: var(--f-data); font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--tide); }
+.lede { color: var(--ink-2); font-size: 17px; max-width: 64ch; }
+.num { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+
+/* nav */
+.nav { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 25; transition: background .25s, border-color .25s; border-bottom: 1px solid transparent; }
+.nav.solid { background: var(--glass); backdrop-filter: blur(12px); border-color: var(--rule); }
+.nav .wrap { display: flex; align-items: center; gap: 18px; height: 58px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 750; font-size: 19px; letter-spacing: -0.01em; color: var(--ink); text-decoration: none; white-space: nowrap; flex: none; }
+.brand svg { width: 26px; height: 26px; }
+.nav-links { margin-left: auto; display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.nav-links a { font-size: 13.5px; color: var(--ink-2); text-decoration: none; padding: 7px 11px; border-radius: 999px; white-space: nowrap; }
+.nav-links a:hover { background: var(--panel-2); color: var(--ink); }
+@media (max-width: 680px) { .nav-links a:nth-child(n+3) { display: none; } }
+
+/* story */
+.story { position: relative; }
+.stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: linear-gradient(180deg, var(--sky-top), var(--sky-bot) 70%); }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.stage canvas, .sim-view canvas { opacity: 0; transition: opacity 1.4s cubic-bezier(.2,.7,.2,1); }
+.stage canvas.ready, .sim-view canvas.ready { opacity: 1; }
+.contours { position: absolute; inset: 0; pointer-events: none; opacity: .55; }
+.contours path { fill: none; stroke: var(--tide); stroke-width: 1; opacity: .25; }
+.soundings { position: absolute; inset: 0; pointer-events: none; font-family: var(--f-data); font-size: 11px; color: var(--ink-2); }
+.soundings span { position: absolute; opacity: .4; }
+.hud { position: absolute; right: var(--gr); top: 76px; display: grid; gap: 6px; justify-items: end; pointer-events: none; }
+.hud-year { font-family: var(--f-display); font-weight: 800; font-variation-settings: "wdth" 75; font-size: clamp(56px, 9vw, 120px); line-height: .85; letter-spacing: -0.04em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.hud-line { font-family: var(--f-data); font-size: 12.5px; color: var(--ink-2); background: var(--glass); padding: 4px 9px; border-radius: 6px; backdrop-filter: blur(8px); }
+.gauge { position: absolute; left: var(--gl); top: 90px; bottom: 90px; width: 46px; pointer-events: none; display: none; }
+@media (min-width: 900px) { .gauge { display: block; } }
+.gauge-scale { position: absolute; inset: 0 auto 0 18px; width: 2px; background: var(--axis); }
+.gauge-tick { position: absolute; left: 10px; font-family: var(--f-data); font-size: 10px; color: var(--muted); transform: translateY(-50%); }
+.gauge-tick::before { content: ""; position: absolute; left: 4px; top: 50%; width: 10px; height: 1px; background: var(--axis); }
+.gauge-tick span { margin-left: 22px; }
+.gauge-mark { position: absolute; left: 6px; width: 26px; height: 3px; border-radius: 2px; background: var(--tide); transform: translateY(-50%); box-shadow: 0 0 0 3px color-mix(in srgb, var(--tide) 25%, transparent); }
+.steps { position: relative; margin-top: -100vh; margin-top: -100svh; z-index: 2; pointer-events: none; }
+.step { min-height: 100vh; min-height: 100svh; display: flex; align-items: center; padding-left: var(--gl); padding-right: var(--gr); }
+.step:first-child { align-items: flex-end; padding-bottom: 9vh; }
+.step-card { pointer-events: auto; max-width: 440px; background: var(--glass); backdrop-filter: blur(14px); border: 1px solid var(--rule); border-radius: 16px; padding: 22px 24px; box-shadow: var(--shadow); display: grid; gap: 10px; margin-left: clamp(0px, 6vw, 90px); }
+.step-card .big { font-family: var(--f-display); font-weight: 780; font-variation-settings: "wdth" 80; font-size: clamp(34px, 4.6vw, 52px); line-height: .95; letter-spacing: -0.02em; }
+.step-card p { color: var(--ink-2); }
+.step-card .src { font-size: 12px; color: var(--muted); }
+.hero { pointer-events: auto; display: grid; gap: 18px; max-width: 780px; margin-left: clamp(0px, 6vw, 90px); }
+.hero h1 { font-size: clamp(64px, 13vw, 176px); font-weight: 800; font-variation-settings: "wdth" 75, "opsz" 96; line-height: .82; letter-spacing: -0.05em; color: var(--ink); }
+.hero h1 .wave { color: var(--tide); }
+.hero .lede { font-size: clamp(16px, 1.8vw, 20px); color: var(--ink); max-width: 46ch; background: var(--glass); backdrop-filter: blur(10px); padding: 12px 16px; border-radius: 12px; }
+.cue { display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-data); font-size: 12px; color: var(--ink-2); }
+.cue i { width: 22px; height: 34px; border: 1.5px solid var(--ink-2); border-radius: 12px; position: relative; }
+.cue i::after { content: ""; position: absolute; left: 50%; top: 7px; width: 3px; height: 7px; border-radius: 2px; background: var(--ink-2); transform: translateX(-50%); animation: cue 1.8s infinite; }
+@keyframes cue { 0% { opacity: 0; transform: translate(-50%, 0); } 40% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, 10px); } }
+@media (prefers-reduced-motion: reduce) { .cue i::after { animation: none; } }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-data); font-size: 11.5px; padding: 4px 9px; border-radius: 999px; background: var(--panel-2); color: var(--ink-2); border: 1px solid var(--rule); white-space: nowrap; }
+.chip.good { background: var(--chip-good); color: var(--good); border-color: transparent; }
+.chip.warn { background: var(--chip-warn); color: var(--warn); border-color: transparent; }
+.chip.crit { background: var(--chip-crit); color: var(--crit); border-color: transparent; }
+.chip svg { width: 12px; height: 12px; }
+.legend3d { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; font-size: 12px; color: var(--ink-2); background: var(--glass); backdrop-filter: blur(8px); padding: 6px 12px; border-radius: 999px; pointer-events: none; max-width: calc(100% - 32px); }
+.legend3d i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.webgl-off { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; color: var(--muted); }
+
+/* sections */
+section.band { position: relative; z-index: 3; background: var(--bg); padding-block: clamp(56px, 8vw, 110px); }
+section.band.alt { background: var(--panel); }
+.sec-head { display: grid; gap: 14px; margin-bottom: 34px; }
+.grid { display: grid; gap: 18px; }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.g5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .g5 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 960px) { .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .g3 { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .g2, .g5 { grid-template-columns: 1fr; } }
+@media (max-width: 460px) { .g4 { grid-template-columns: 1fr; } }
+.card { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; padding: 20px; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; }
+section.alt .card { background: var(--bg); }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.note { font-size: 13px; color: var(--muted); }
+.reveal { transition: transform .8s cubic-bezier(.2,.7,.2,1), opacity .8s; }
+.reveal.pre { transform: translateY(26px); opacity: .001; }
+@media (prefers-reduced-motion: reduce) { .reveal.pre { transform: none; opacity: 1; } }
+.stat { display: grid; gap: 4px; }
+.stat .v { font-family: var(--f-display); font-weight: 780; font-variation-settings: "wdth" 80; font-size: 40px; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 13.5px; color: var(--ink-2); }
+.stat .s { font-size: 12px; color: var(--muted); }
+
+/* charts */
+.chart { position: relative; width: 100%; min-width: 0; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart text { font-family: var(--f-data); font-size: 10.5px; fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.legend i.sq { width: 10px; height: 10px; border-radius: 3px; }
+.tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--rule); border-radius: 9px; padding: 8px 10px; font-size: 12px; box-shadow: var(--shadow); min-width: 150px; z-index: 5; opacity: 0; transition: opacity .12s; }
+.tip .t-h { font-family: var(--f-data); font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.tip .t-r { display: flex; justify-content: space-between; gap: 14px; align-items: center; }
+.tip .t-r span { display: flex; align-items: center; gap: 6px; color: var(--ink-2); }
+.tip .t-r b { font-family: var(--f-data); font-weight: 500; color: var(--ink); }
+.tip .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* tables */
+.tbl-wrap { overflow-x: auto; min-width: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; padding: 8px 10px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+td.n, th.n { text-align: right; font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+tr.best td { background: color-mix(in srgb, var(--tide) 10%, transparent); }
+tr[data-m] { cursor: pointer; }
+tr[data-m]:hover td { background: var(--panel-2); }
+tr.sel td { box-shadow: inset 0 -2px 0 var(--ink); }
+.tag { font-family: var(--f-data); font-size: 10.5px; padding: 2px 6px; border-radius: 4px; color: #fff; }
+.tag.A { background: var(--s1); } .tag.B { background: var(--s2); } .tag.C { background: var(--s3); }
+.neg { color: var(--crit); }
+.law { font-family: var(--f-data); font-size: 14px; background: var(--panel-2); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; overflow-x: auto; white-space: nowrap; }
+.law b { color: var(--tide); font-weight: 500; }
+.pairs { display: grid; gap: 10px; }
+.pair { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline; border-bottom: 1px dashed var(--rule); padding-bottom: 8px; font-size: 14px; }
+.pair b { font-family: var(--f-data); font-weight: 500; }
+
+/* simulator */
+.sim { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 380px); gap: 18px; align-items: start; }
+@media (max-width: 980px) { .sim { grid-template-columns: 1fr; } }
+.sim-view { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--rule); background: linear-gradient(180deg, var(--sky-top), var(--sky-bot)); aspect-ratio: 16 / 10; max-height: 640px; width: 100%; }
+.sim-view canvas { display: block; width: 100%; height: 100%; cursor: grab; touch-action: pan-y; }
+.sim-view canvas:active { cursor: grabbing; }
+.sim-tags { position: absolute; left: 14px; top: 12px; display: flex; flex-wrap: wrap; gap: 6px; pointer-events: none; }
+.sim-hint { position: absolute; right: 14px; top: 14px; font-size: 11.5px; color: var(--ink-2); background: var(--glass); padding: 3px 8px; border-radius: 6px; }
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+@media (max-width: 640px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.kpi { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; min-width: 0; }
+.kpi .k { font-size: 12px; color: var(--muted); }
+.kpi .v { font-family: var(--f-display); font-weight: 760; font-variation-settings: "wdth" 85; font-size: 28px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.kpi .s { font-size: 11.5px; color: var(--muted); }
+.panel { display: grid; gap: 16px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 3px; background: var(--panel-2); border: 1px solid var(--rule); border-radius: 10px; padding: 3px; }
+.seg button { font: 500 12.5px var(--f-body); color: var(--ink-2); background: transparent; border: 0; border-radius: 7px; padding: 7px 10px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.14); }
+.defences { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.def { text-align: left; font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 10px 12px; cursor: pointer; display: grid; gap: 2px; }
+.def:hover { border-color: var(--axis); }
+.def[aria-pressed="true"] { border-color: var(--tide); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tide) 30%, transparent); }
+.def b { font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 7px; }
+.def span { font-size: 11.5px; color: var(--muted); }
+.def i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.def.wide { grid-column: 1 / -1; }
+.slider { display: grid; gap: 4px; }
+.slider label { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--ink-2); }
+.slider label b { font-family: var(--f-data); font-weight: 500; color: var(--ink); }
+input[type="range"] { width: 100%; accent-color: var(--tide); }
+.btn { font: 600 14px var(--f-body); border: 0; border-radius: 10px; padding: 11px 16px; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; justify-content: center; }
+.btn.primary { background: var(--tide); color: var(--tide-ink); }
+.btn.ghost { background: var(--panel-2); color: var(--ink); border: 1px solid var(--rule); }
+.btn svg { width: 16px; height: 16px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.verdict { padding: 12px 14px; border-radius: 12px; font-size: 13.5px; border: 1px solid var(--rule); background: var(--panel-2); color: var(--ink-2); }
+
+/* compare */
+.dcard { display: grid; gap: 12px; align-content: start; }
+.dcard .top { display: flex; align-items: center; gap: 8px; }
+.dcard .top i { width: 12px; height: 12px; border-radius: 4px; }
+.dcard dl { margin: 0; display: grid; gap: 8px; }
+.dcard dl div { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; border-bottom: 1px dashed var(--rule); padding-bottom: 6px; }
+.dcard dt { color: var(--muted); }
+.dcard dd { margin: 0; font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+
+/* method */
+.steps-list { display: grid; counter-reset: s; }
+.mstep { display: grid; grid-template-columns: 44px 1fr; gap: 12px; padding: 14px 0; border-top: 1px solid var(--rule); }
+.mstep::before { counter-increment: s; content: counter(s, decimal-leading-zero); font-family: var(--f-data); color: var(--tide); font-size: 13px; padding-top: 2px; }
+.mstep p { color: var(--ink-2); font-size: 14px; max-width: 70ch; }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 7px; color: var(--ink-2); font-size: 14px; }
+code { font-family: var(--f-data); font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--rule); padding: 1px 5px; border-radius: 4px; }
+footer { position: relative; z-index: 3; background: var(--bg); padding-block: 40px 56px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12.5px; }
+footer .wrap { display: grid; gap: 8px; }
+</style>
+
+<nav class="nav" id="nav" aria-label="Sections">
+  <div class="wrap">
+    <a class="brand" href="#top"><svg viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="12" fill="var(--tide)"/><path d="M3 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2v6.5A11.5 11.5 0 0 1 3 18z" fill="var(--panel)"/></svg>Tideline</a>
+    <div class="nav-links">
+      <a href="#record">Record</a>
+      <a href="#forecast">Forecast</a>
+      <a href="#defend">Simulator</a>
+      <a href="#compare">Compare</a>
+      <a href="#method">Method</a>
+    </div>
+  </div>
+</nav>
+
+<main id="top">
+<div class="story" id="story">
+  <div class="stage" id="stage">
+    <svg class="contours" id="contours" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 100 100"></svg>
+    <div class="soundings" id="soundings" aria-hidden="true"></div>
+    <canvas id="scene" aria-label="3D model of a coastal town whose sea level rises as you scroll"></canvas>
+    <div class="webgl-off" id="webgl-off" hidden>The 3D coast needs WebGL, which this browser has turned off. Every chart and number below still works.</div>
+    <div class="gauge" id="gauge" aria-hidden="true"><div class="gauge-scale"></div></div>
+    <div class="hud" aria-live="polite">
+      <div class="hud-year" id="hud-year">2024</div>
+      <div class="hud-line" id="hud-sea">sea level —</div>
+      <div class="hud-line" id="hud-homes">homes flooded —</div>
+    </div>
+    <div class="legend3d" aria-hidden="true"><span><i style="background:#efe4d0"></i>Dry home</span><span><i style="background:#ff5a47"></i>Flooded home</span><span><i style="background:#2f7d4f"></i>Mangroves</span><span><i style="background:#9aa3a6"></i>Embankment</span></div>
+  </div>
+  <div class="steps" id="steps">
+    <div class="step">
+      <div class="hero" data-speed="-0.18">
+        <div class="eyebrow">21CEO310T · Global Warming and Climate Change · LLT / CLA-2</div>
+        <h1>Tide<span class="wave">line</span></h1>
+        <p class="lede">The sea is rising under a model coastal town on India's west coast. Scroll to raise it from 1880 to 2100, send in a storm, then build the defences and test when each one fails.</p>
+        <div class="row"><span class="cue"><i></i>Scroll to raise the sea</span><span class="chips"><span class="chip">CSIRO</span><span class="chip">NOAA altimetry</span><span class="chip">PSMSL Mumbai</span><span class="chip">NASA GISS</span></span></div>
+      </div>
+    </div>
+    <div class="step"><div class="step-card"><span class="eyebrow">1880 · tide gauges</span><div class="big" id="st1-big"></div><p id="st1-p"></p><span class="src">CSIRO global reconstruction from tide gauges (Church &amp; White).</span></div></div>
+    <div class="step"><div class="step-card"><span class="eyebrow">2024 · satellites</span><div class="big" id="st2-big"></div><p id="st2-p"></p><span class="src">NOAA Laboratory for Satellite Altimetry, TOPEX → Sentinel-6.</span></div></div>
+    <div class="step"><div class="step-card"><span class="eyebrow">2100 · high emissions</span><div class="big" id="st3-big"></div><p id="st3-p"></p><span class="src">Tideline machine-learning forecast, SSP5-8.5 · IPCC AR6 range for comparison.</span></div></div>
+    <div class="step"><div class="step-card"><span class="eyebrow">2100 · a 1-in-100-year storm</span><div class="big" id="st4-big"></div><p id="st4-p"></p><span class="src">High tide + storm surge + wave set-up on top of the 2100 sea, no defences.</span></div></div>
+    <div class="step"><div class="step-card"><span class="eyebrow">2050 · defended</span><div class="big" id="st5-big"></div><p id="st5-p"></p><div class="row"><a class="btn primary" href="#defend">Open the simulator</a></div></div></div>
+  </div>
+</div>
+
+<section class="band" id="record">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The record · Units II–III</span>
+      <h2>One sea-level record, 1880 to 2024</h2>
+      <p class="lede">Tide gauges are the only record before 1993; satellites are more accurate after it. Tideline joins them, shifting the altimetry by their mean difference over the 1993–2019 overlap, so the record runs without a jump. Levels are relative to the 1995–2014 mean, the IPCC AR6 baseline.</p>
+    </div>
+    <div class="grid g4 reveal" id="rec-stats" style="margin-bottom:18px"></div>
+    <div class="card reveal" style="margin-bottom:18px">
+      <div class="card-head"><h3>Global mean sea level</h3><span class="note" id="splice-note"></span></div>
+      <div class="legend" id="lg-gmsl"></div>
+      <div class="chart" id="c-gmsl"></div>
+    </div>
+    <div class="grid g2 reveal">
+      <div class="card">
+        <div class="card-head"><h3>Mumbai vs the global mean</h3><span class="note">PSMSL station 43, Apollo Bandar</span></div>
+        <div class="legend" id="lg-mum"></div>
+        <div class="chart" id="c-mum"></div>
+        <p class="note" id="mum-note"></p>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Data quality</h3><span class="note">every source behind this page</span></div>
+        <div class="tbl-wrap"><table id="dq"></table></div>
+        <p class="note">Mumbai's gaps are years the PSMSL flags for too many missing days. The four sources are quality-controlled official records.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt" id="forecast">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The forecast · LR · SVR · Random Forest</span>
+      <h2>Machine learning that knows the physics</h2>
+      <p class="lede">Warm water expands and warm air melts ice, so the <em>rate</em> of rise follows the warming. Rahmstorf and Vermeer wrote this as a law. Tideline gives the models its terms, the accumulated warming ∫T dt, and tests them on 2000–2024, which they never saw.</p>
+    </div>
+    <div class="grid g2 reveal" style="margin-bottom:18px">
+      <div class="card">
+        <h3>The semi-empirical law</h3>
+        <div class="law">dH/dt = <b>a</b>·(T − <b>T₀</b>) + <b>b</b>·dT/dt  ⟹  H = a·∫T dt − a·T₀·t + b·T + c</div>
+        <div class="pairs" id="law-pairs"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Test-set metrics, 2000–2024</h3><span class="note">errors in mm</span></div>
+        <div class="tbl-wrap"><table id="metrics"></table></div>
+        <div class="legend"><span><span class="tag A">A</span> Pure ML: year, T</span><span><span class="tag B">B</span> Semi-empirical features</span><span><span class="tag C">C</span> Physics backbone + ML residual</span></div>
+      </div>
+    </div>
+    <div class="card reveal" style="margin-bottom:18px">
+      <div class="card-head"><h3 id="pred-title">Predicted vs observed</h3><span class="note" id="pred-note">Choose a row in the table to switch model</span></div>
+      <div class="legend" id="lg-pred"></div>
+      <div class="chart" id="c-pred"></div>
+    </div>
+    <div class="grid g2 reveal">
+      <div class="card">
+        <div class="card-head"><h3>Projections to 2100</h3><span class="note">vs IPCC AR6 likely ranges (bars)</span></div>
+        <div class="legend" id="lg-proj"></div>
+        <div class="chart" id="c-proj"></div>
+      </div>
+      <div class="card">
+        <h3>Why the checks matter</h3>
+        <div class="grid g2" id="checks"></div>
+        <p class="note" id="proj-note"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="defend">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The simulator · Unit V adaptation</span>
+      <h2>Defend the town. Find the year it fails.</h2>
+      <p class="lede">1,200 homes on a 1 km stretch of coast, from 2.5 m above today's sea. Pick a defence, a warming pathway and a storm, then drag through the years. The flood model from the notebook runs live in your browser.</p>
+    </div>
+    <div class="sim">
+      <div style="min-width:0">
+        <div class="sim-view">
+          <canvas id="simcanvas" aria-label="Interactive 3D model of the town with the selected defence"></canvas>
+          <div class="sim-tags"><span class="chip" id="sim-state"></span><span class="chip" id="sim-level"></span></div>
+          <span class="sim-hint">Drag to orbit</span>
+          <div class="webgl-off" id="webgl-off2" hidden>3D view unavailable (WebGL is off). The numbers still update.</div>
+        </div>
+        <div class="kpis" id="kpis"></div>
+      </div>
+      <div class="card panel">
+        <div class="slider"><label for="sl-year">Year <b id="v-year"></b></label><input type="range" id="sl-year" min="2025" max="2100" step="1" value="2070"></div>
+        <div>
+          <div class="note" style="margin-bottom:6px">Warming pathway</div>
+          <div class="seg" id="seg-scen" role="group" aria-label="Warming pathway"></div>
+        </div>
+        <div>
+          <div class="note" style="margin-bottom:6px">Defence</div>
+          <div class="defences" id="defs"></div>
+        </div>
+        <div class="slider"><label for="sl-mw">Mangrove belt width <b id="v-mw"></b></label><input type="range" id="sl-mw" min="0" max="800" step="25"></div>
+        <div class="slider"><label for="sl-crest">Embankment crest <b id="v-crest"></b></label><input type="range" id="sl-crest" min="0" max="6" step="0.1"></div>
+        <div class="slider"><label for="sl-plinth">House plinth raised by <b id="v-plinth"></b></label><input type="range" id="sl-plinth" min="0" max="2" step="0.1"></div>
+        <div>
+          <div class="note" style="margin-bottom:6px">Storm</div>
+          <div class="seg" id="seg-storm" role="group" aria-label="Storm return period"></div>
+        </div>
+        <div class="row"><button class="btn primary" id="storm-btn" type="button"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M9.5 1 3 9h4l-1 6 6.5-8h-4z"/></svg>Send the storm</button><button class="btn ghost" id="calm-btn" type="button">Calm sea</button></div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+    </div>
+    <div class="card reveal" style="margin-top:18px">
+      <div class="card-head"><h3>Expected annual damage, your defence vs none</h3><span class="note" id="ead-note"></span></div>
+      <div class="legend" id="lg-ead"></div>
+      <div class="chart" id="c-ead"></div>
+    </div>
+  </div>
+</section>
+
+<section class="band alt" id="compare">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow">The comparison</span>
+      <h2>Green, grey, raised or both</h2>
+      <p class="lede">The four standard defences from the notebook, scored over 2025–2100. Costs are illustrative unit costs for a 1 km stretch, so compare the options with each other rather than reading them as a quote.</p>
+      <div class="seg" id="seg-cmp" role="group" aria-label="Pathway for the comparison"></div>
+    </div>
+    <div class="grid g5 reveal" id="dcards" style="margin-bottom:18px"></div>
+    <div class="card reveal">
+      <div class="card-head"><h3>Homes flooded by a 1-in-100 storm, year by year</h3><span class="note">the cliff edge of grey defences</span></div>
+      <div class="legend" id="lg-cliff"></div>
+      <div class="chart" id="c-cliff"></div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="method">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="eyebrow">Method</span><h2>How Tideline works</h2></div>
+    <div class="grid g2" style="gap:40px">
+      <div class="steps-list reveal">
+        <div class="mstep"><div><h3>Join the records</h3><p>CSIRO tide-gauge reconstruction to 1992, NOAA satellite altimetry from 1993, PSMSL Mumbai, NASA GISTEMP; one annual table, 1880–2024.</p></div></div>
+        <div class="mstep"><div><h3>Encode the physics</h3><p>Cumulative warming ∫T dt, year and T are the terms of the Vermeer–Rahmstorf law, so Linear Regression on them is the published model.</p></div></div>
+        <div class="mstep"><div><h3>Train three algorithms, three ways</h3><p>LR, SVR and Random Forest on pure inputs, on physics features and as physics-guided hybrids, tuned with time-series cross-validation inside 1880–1999.</p></div></div>
+        <div class="mstep"><div><h3>Test on the unseen future</h3><p>MAE, MSE, RMSE and R² on 2000–2024, rolling-origin windows, and a shuffled split to show how it inflates scores.</p></div></div>
+        <div class="mstep"><div><h3>Project and localise</h3><p>Integrate the law under SSP1-2.6, SSP2-4.5 and SSP5-8.5 warming, add Mumbai's land-motion offset, and check against IPCC AR6.</p></div></div>
+        <div class="mstep"><div><h3>Simulate the defences</h3><p>Gumbel storm surge, wave attenuation by mangroves, embankment overtopping, raised plinths, JRC depth-damage curves, expected annual damage and cost-benefit.</p></div></div>
+      </div>
+      <div class="grid reveal" style="align-content:start">
+        <div class="card">
+          <h3>Model assumptions</h3>
+          <div class="tbl-wrap"><table id="assume"></table></div>
+        </div>
+        <div class="card">
+          <h3>Limitations</h3>
+          <ul class="plain">
+            <li>The town, its costs and the surge statistics are illustrative, not a survey of a real ward.</li>
+            <li>The flood model is a static bathtub with wave and surge attenuation; it does not route water inland over time.</li>
+            <li>The semi-empirical law assumes the past link between warming and rise continues, so it cannot represent sudden ice-sheet collapse.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Tideline · model export generated <span id="f-gen"></span> from <code>Tideline_Colab.ipynb</code></span>
+    <span>Data: CSIRO GMSL reconstruction (Church &amp; White 2011) · NOAA Laboratory for Satellite Altimetry · PSMSL · NASA GISS GISTEMP v4. Methods: Rahmstorf 2007; Vermeer &amp; Rahmstorf 2009; IPCC AR6 WG1 Ch. 9; McIvor et al. 2012; Saintilan et al. 2020; Huizinga et al. 2017; Narayan et al. 2016; Alongi 2014.</span>
+  </div>
+</footer>
+
+<script id="tl-data" type="application/json">__TIDELINE_DATA__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+"use strict";
+const D = JSON.parse(document.getElementById("tl-data").textContent);
+const M = D.meta, S = D.sim;
+const $ = (s, r = document) => r.querySelector(s);
+const fmt = (v, d = 2) => (v == null || Number.isNaN(v) ? "—" : v.toFixed(d));
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SCENS = Object.keys(D.projections);
+const SC_COL = { "SSP1-2.6": "var(--s3)", "SSP2-4.5": "var(--s4)", "SSP5-8.5": "var(--s8)" };
+const DEF_COL = { "No defence": "var(--ink-2)", "Mangrove belt": "var(--s6)", "Embankment": "var(--s1)", "Raised houses": "var(--s2)", "Hybrid (mangrove + low embankment)": "var(--s7)" };
+const DEF_SHORT = { "No defence": "No defence", "Mangrove belt": "Mangroves", "Embankment": "Embankment", "Raised houses": "Raised houses", "Hybrid (mangrove + low embankment)": "Hybrid" };
+
+// ===================================================================== flood model (mirrors the notebook)
+const HX = D.home_x, HZ = HX.map((x) => S.town.shore_elev + S.town.slope * x);
+const N = HX.length;
+const surge = (T) => S.sea.surge_mu - S.sea.surge_beta * Math.log(-Math.log(1 - 1 / T));
+const localSlr = (g, y) => (S.local.alpha * g - S.local.alpha * D.gmsl_last + S.local.beta_mm_yr * (y - 2024)) / 1000;
+function interp(x, xs, ys) { if (x <= xs[0]) return ys[0]; for (let i = 1; i < xs.length; i++) if (x <= xs[i]) return ys[i - 1] + (ys[i] - ys[i - 1]) * (x - xs[i - 1]) / (xs[i] - xs[i - 1]); return ys[ys.length - 1]; }
+const ddf = (d) => interp(d, S.ddf_depth, S.ddf_frac);
+function event(slr, T, m, health = 1) {
+  const w = (m.mangrove_w || 0) * health;
+  const wave = S.sea.wave_hs * Math.exp(-S.mangrove.k_wave * w);
+  const still = slr + S.sea.mhhw + surge(T) - S.mangrove.surge_cut_per_km * w / 1000;
+  const level = still + S.sea.setup_factor * wave;
+  const crest = m.crest || 0;
+  if (crest > 0 && level + S.sea.runup_factor * wave <= crest) return { level, wave, held: true, flooded: 0, dmg: 0, mask: null };
+  let flooded = 0, dmg = 0; const mask = new Uint8Array(N), depth = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    if (level > HZ[i]) { flooded++; mask[i] = 1; }
+    const d = Math.max(0, level - HZ[i] - (m.plinth || 0)); depth[i] = d; dmg += ddf(d);
+  }
+  return { level, wave, held: false, overtopped: crest > 0, flooded, dmg: dmg * S.town.home_value_usd, mask, depth };
+}
+function ead(slr, m, h) {
+  const rp = S.return_periods, p = rp.map((T) => 1 / T), dmg = rp.map((T) => event(slr, T, m, h).dmg);
+  let area = 0; for (let i = rp.length - 1; i > 0; i--) area += (p[i - 1] - p[i]) * (dmg[i - 1] + dmg[i]) / 2;
+  return area + dmg[0] * (1 - p[0]);
+}
+const capex = (m) => (m.mangrove_w ? m.mangrove_w * 1000 / 1e4 * S.mangrove.cost_usd_per_ha * S.town.length_km : 0)
+  + (m.crest ? m.crest * S.embankment.cost_usd_per_m_per_km * S.town.length_km : 0) + (m.plinth ? S.raised.cost_usd_per_home * S.town.homes : 0);
+const om = (m) => (m.mangrove_w ? m.mangrove_w * 1000 / 1e4 * S.mangrove.om_usd_per_ha_yr * S.town.length_km : 0)
+  + (m.crest ? S.embankment.om_frac * m.crest * S.embankment.cost_usd_per_m_per_km * S.town.length_km : 0);
+const cache = new Map();
+function run(scen, m) {
+  const key = scen + JSON.stringify(m);
+  if (cache.has(key)) return cache.get(key);
+  const P = D.projections[scen], years = [], slr = [];
+  for (let y = S.finance.start; y <= S.finance.end; y++) { years.push(y); slr.push(localSlr(P.gmsl[P.year.indexOf(y)], y)); }
+  const mm = slr.map((v) => v * 1000), n = mm.length;
+  const rate = mm.map((v, i) => (i === 0 ? mm[1] - mm[0] : i === n - 1 ? mm[n - 1] - mm[n - 2] : (mm[i + 1] - mm[i - 1]) / 2));
+  let h = 1; const health = rate.map((r) => { if (m.mangrove_w && r > S.mangrove.drown_rate_mm_yr) h = Math.max(0, h - S.mangrove.decline_per_yr); return h; });
+  const e = slr.map((s, i) => ead(s, m, health[i]));
+  const f100 = slr.map((s, i) => event(s, 100, m, health[i]).flooded);
+  const area = (m.mangrove_w || 0) * 1000 / 1e4 * S.town.length_km;
+  const co2 = health.reduce((a, hh) => a + area * S.mangrove.co2_t_per_ha_yr * hh, 0);
+  const out = { years, slr, rate, health, ead: e, f100, co2 };
+  cache.set(key, out);
+  return out;
+}
+function finance(scen, m) {
+  const r = run(scen, m), base = run(scen, {});
+  let pvb = 0, pvo = 0;
+  r.years.forEach((y, i) => { const d = Math.pow(1 + S.finance.discount, -(y - S.finance.start)); pvb += (base.ead[i] - r.ead[i]) * d; pvo += om(m) * d; });
+  const cost = capex(m) + pvo;
+  return { pvb, cost, bcr: cost > 0 ? pvb / cost : null };
+}
+window.__tl = { run, finance, event, localSlr };
+
+// ===================================================================== 3D diorama
+// Procedural PBR coastline. Everything is generated in code (no texture files): ACES filmic tone mapping, sRGB output,
+// a sky-dome environment for image-based light and reflections, soft sun shadows, procedural surface detail
+// (noise albedo, bump, wet sand that follows the tide) and a depth-aware water shader.
+const XS = 1 / 50;                                   // world units per metre (horizontal); vertical is metres
+function groundM(xm) {
+  if (xm >= 40) return S.town.shore_elev + S.town.slope * xm;
+  if (xm >= 0) return 1.4 + (S.town.shore_elev + S.town.slope * 40 - 1.4) * (xm / 40);
+  if (xm >= -800) return 1.4 + 0.0015 * xm;
+  return 0.2 + 0.006 * (xm + 800);
+}
+// organic shoreline: shifts only the sea side (x < 40 m), so the town and the flood model are untouched
+const shoreWobble = (z) => 10 * Math.sin(z * 0.45 + 0.6) + 6 * Math.sin(z * 1.17 + 2.0);
+const shoreX = (xm, z) => xm + shoreWobble(z) * Math.min(1, Math.max(0, 1 - xm / 40));
+const groundVis = (xm, z) => groundM(shoreX(xm, z));
+function rng(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+function vnoise(x, z) {
+  const h = (a, b) => { const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453; return s - Math.floor(s); };
+  const i = Math.floor(x), j = Math.floor(z), fx = x - i, fz = z - j, u = fx * fx * (3 - 2 * fx), v = fz * fz * (3 - 2 * fz);
+  return (h(i, j) * (1 - u) + h(i + 1, j) * u) * (1 - v) + (h(i, j + 1) * (1 - u) + h(i + 1, j + 1) * u) * v;
+}
+const HOME_ZPOS = (() => { const r = rng(42); return HX.map(() => -9.2 + 18.4 * r()); })();
+const HOME_KIND = (() => { const r = rng(77); return HX.map(() => ({ flat: r() < 0.55, tall: r() < 0.2, sx: 0.85 + r() * 0.4, sz: 0.85 + r() * 0.4 })); })();
+const ROOF_TILE = [0xa9503a, 0x8c4a3a, 0xb8703f, 0x6d7a82, 0x9b5a44];
+const ROOF_FLAT = [0xc9c4ba, 0xb9b3a7, 0xd6d2c9, 0xa9a59c];
+const WALL_PAINT = [0xf3eee3, 0xf2e3b9, 0xdde9dd, 0xf0dacd, 0xd9e4eb, 0xe9e3d5];
+
+const GL_NOISE = `
+float h21(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float vnoise(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(h21(i), h21(i + vec2(1.0, 0.0)), u.x), mix(h21(i + vec2(0.0, 1.0)), h21(i + vec2(1.0, 1.0)), u.x), u.y); }
+float fbm(vec2 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 4; i++) { s += a * vnoise(p); p = p * 2.03 + vec2(17.1, 9.2); a *= 0.5; } return s; }
+`;
+const GL_SKY = `
+vec3 skyCol(vec3 d, vec3 sunDir){
+  float h = clamp(d.y, -1.0, 1.0);
+  vec3 zen = vec3(0.10, 0.26, 0.55), hor = vec3(0.72, 0.78, 0.80), gnd = vec3(0.20, 0.18, 0.15);
+  vec3 c = h > 0.0 ? mix(hor, zen, pow(h, 0.55)) : mix(hor, gnd, min(1.0, -h * 4.0));
+  float s = max(dot(d, sunDir), 0.0);
+  return c + vec3(1.0, 0.80, 0.56) * (pow(s, 6.0) * 0.22 + pow(s, 64.0) * 0.5);
+}`;
+const GL_GROUND = `
+uniform float uShore; uniform float uSlope;
+float gM(float xm){
+  if (xm >= 40.0) return uShore + uSlope * xm;
+  if (xm >= 0.0) return 1.4 + (uShore + uSlope * 40.0 - 1.4) * (xm / 40.0);
+  if (xm >= -800.0) return 1.4 + 0.0015 * xm;
+  return 0.2 + 0.006 * (xm + 800.0);
+}
+float groundAt(vec2 p){ float xm = p.x * 50.0; float w = 10.0 * sin(p.y * 0.45 + 0.6) + 6.0 * sin(p.y * 1.17 + 2.0);
+  return gM(xm + w * clamp(1.0 - xm / 40.0, 0.0, 1.0)); }`;
+
+function makeDiorama(canvas, onFail) {
+  let renderer;
+  try { if (!window.THREE) throw 0; renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" }); }
+  catch (e) { onFail(); return null; }
+  const lin = (h) => new THREE.Color(h).convertSRGBToLinear();
+  const mobile = Math.min(screen.width, screen.height) < 700;
+  let pr = Math.min(devicePixelRatio || 1, mobile ? 1.5 : 2);
+  renderer.setPixelRatio(pr);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.9;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;   // shadows re-render only when the scene changes
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 500);
+  const SUN = new THREE.Vector3(-0.58, 0.62, 0.53).normalize();
+  const U = { uTime: { value: 0 }, uLevel: { value: 1.7 }, uStorm: { value: 0 }, uMangroveX: { value: 1e3 }, uWetX: { value: 40 },
+    uK: { value: S.mangrove.k_wave / XS }, uSunDir: { value: SUN }, uShore: { value: S.town.shore_elev }, uSlope: { value: S.town.slope } };
+  const BOTTOM = -9;
+
+  // ---- environment: a procedural sky dome, prefiltered for image-based lighting and reflections
+  // (the same sky function as the water shader, evaluated on the CPU into an equirectangular canvas)
+  {
+    const W = 256, H = 128, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const cx = cv.getContext("2d"), img = cx.createImageData(W, H), mix3 = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+    const toS = (v) => Math.round(255 * Math.min(1, v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055));
+    for (let j = 0; j < H; j++) for (let i = 0; i < W; i++) {
+      const lon = (i / W) * Math.PI * 2 - Math.PI, lat = Math.PI / 2 - (j / H) * Math.PI;
+      const d = [Math.cos(lat) * Math.sin(lon), Math.sin(lat), Math.cos(lat) * Math.cos(lon)], h = d[1];
+      let col = h > 0 ? mix3([0.72, 0.78, 0.8], [0.1, 0.26, 0.55], Math.pow(h, 0.55)) : mix3([0.72, 0.78, 0.8], [0.2, 0.18, 0.15], Math.min(1, -h * 4));
+      const s = Math.max(0, d[0] * SUN.x + d[1] * SUN.y + d[2] * SUN.z), glow = Math.pow(s, 6) * 0.22 + Math.pow(s, 64) * 0.5 + Math.pow(s, 600) * 2;
+      col = [col[0] + glow, col[1] + glow * 0.8, col[2] + glow * 0.56];
+      const k = (j * W + i) * 4; img.data[k] = toS(col[0]); img.data[k + 1] = toS(col[1]); img.data[k + 2] = toS(col[2]); img.data[k + 3] = 255;
+    }
+    cx.putImageData(img, 0, 0);
+    const tex = new THREE.CanvasTexture(cv); tex.mapping = THREE.EquirectangularReflectionMapping; tex.encoding = THREE.sRGBEncoding;
+    const pm = new THREE.PMREMGenerator(renderer);
+    scene.environment = pm.fromEquirectangular(tex).texture; pm.dispose(); tex.dispose();
+  }
+  // ---- lights: warm low sun (key), cool sky fill (hemisphere + environment)
+  const hemi = new THREE.HemisphereLight(lin(0xcfe2f0), lin(0x6b5a40), 0.15); scene.add(hemi);
+  const sun = new THREE.DirectionalLight(lin(0xffe0bc), 1.8);
+  sun.position.copy(SUN).multiplyScalar(70); sun.castShadow = true;
+  Object.assign(sun.shadow.camera, { left: -46, right: 46, top: 30, bottom: -30, near: 20, far: 140 });
+  const SM = mobile ? 2048 : 3072; sun.shadow.mapSize.set(SM, SM); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+  scene.add(sun, sun.target);
+
+  // ---- material helper: injects world position, procedural albedo / roughness / bump into a standard PBR material
+  function patch(mat, key, o) {
+    mat.customProgramCacheKey = () => key;
+    mat.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, U);
+      sh.vertexShader = sh.vertexShader
+        .replace("#include <common>", `#include <common>\nuniform float uTime; uniform float uStorm; varying vec3 vWP;\n${o.vHead || ""}`)
+        .replace("#include <begin_vertex>", `#include <begin_vertex>\n${o.vBegin || ""}`)
+        .replace("#include <project_vertex>", `#include <project_vertex>
+          #ifdef USE_INSTANCING
+            vWP = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
+          #else
+            vWP = (modelMatrix * vec4(transformed, 1.0)).xyz;
+          #endif
+          ${o.vEnd || ""}`);
+      sh.fragmentShader = sh.fragmentShader
+        .replace("#include <common>", `#include <common>\nuniform float uTime; uniform float uLevel; uniform float uMangroveX; uniform float uWetX; varying vec3 vWP;\n${GL_NOISE}\n${o.fHead || ""}`)
+        .replace("#include <color_fragment>", `#include <color_fragment>\n${o.albedo || ""}`)
+        .replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>\n${o.rough || ""}`)
+        .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>\n${o.bump ? `{ ${o.bump} normal = normalize(normal - (viewMatrix * vec4(bumpW, 0.0)).xyz); }` : ""}`);
+    };
+    return mat;
+  }
+  function tint(g, hex) {
+    const c = lin(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) a.set([c.r, c.g, c.b], i * 3);
+    g.setAttribute("color", new THREE.BufferAttribute(a, 3)); return g;
+  }
+  function merge(geos) {
+    const parts = geos.map((g) => (g.index ? g.toNonIndexed() : g));
+    const n = parts.reduce((s, g) => s + g.attributes.position.count, 0);
+    const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), col = new Float32Array(n * 3).fill(1); let o = 0;
+    parts.forEach((g) => {
+      pos.set(g.attributes.position.array, o * 3); nor.set(g.attributes.normal.array, o * 3);
+      if (g.attributes.color) col.set(g.attributes.color.array, o * 3);
+      o += g.attributes.position.count; g.dispose();
+    });
+    const out = new THREE.BufferGeometry();
+    out.setAttribute("position", new THREE.BufferAttribute(pos, 3)); out.setAttribute("normal", new THREE.BufferAttribute(nor, 3)); out.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    return out;
+  }
+  const boxBase = (w, h, d) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
+
+  // ---- terrain: seabed, mudflat, beach bluff, town ground and fields
+  const tg = new THREE.PlaneGeometry(80, 20, mobile ? 280 : 400, mobile ? 60 : 80); tg.rotateX(-Math.PI / 2);
+  const tp = tg.attributes.position, cols = new Float32Array(tp.count * 3), c = new THREE.Color();
+  const C = { bed: lin(0x4a4436), mudD: lin(0x4c4030), mudS: lin(0x75634a), sand: lin(0xc9ad80), sandDry: lin(0xdcc79c),
+    grass: lin(0x55753a), grass2: lin(0x7a8b46), dry: lin(0xa89c66), dust: lin(0x9c9074) };
+  for (let i = 0; i < tp.count; i++) {
+    const x = tp.getX(i), z = tp.getZ(i), xm = x / XS, xs = shoreX(xm, z);
+    const n1 = vnoise(x * 0.9, z * 0.9), n2 = vnoise(x * 0.22 + 5, z * 0.3 + 3);
+    let y = groundM(xs);
+    if (xm > 80) y += (n1 - 0.5) * 0.05;                                   // gentle land undulation
+    else if (xs < -60) y += (vnoise(x * 2.4, z * 0.7) - 0.5) * 0.05;       // tidal ripples on the mudflat
+    tp.setY(i, y);
+    if (xs < -800) c.copy(C.bed).lerp(C.mudD, n1 * 0.5);
+    else if (xs < 0) c.copy(C.mudD).lerp(C.mudS, (xs + 800) / 800).multiplyScalar(0.9 + n1 * 0.2);
+    else if (xs < 40) c.copy(C.sand).lerp(C.sandDry, Math.min(1, xs / 40 * 0.8 + n1 * 0.25));
+    else {
+      c.copy(C.grass).lerp(C.grass2, n1);
+      if (n2 > 0.58) c.lerp(C.dry, Math.min(1, (n2 - 0.58) * 4) * 0.8);            // dry fields
+      if (xm < 1550) c.lerp(C.dust, 0.4 * Math.min(1, (xm - 40) / 50));              // packed town ground
+      if (xm < 70) c.lerp(C.sandDry, Math.max(0, 1 - (xm - 40) / 30));               // beach blends into grass
+    }
+    cols.set([c.r, c.g, c.b], i * 3);
+  }
+  tg.setAttribute("color", new THREE.BufferAttribute(cols, 3)); tg.computeVertexNormals();
+  const terrain = new THREE.Mesh(tg, patch(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.93 }), "terrain", {
+    albedo: `float n1 = fbm(vWP.xz * 1.6), n2 = fbm(vWP.xz * 9.0 + 3.1);
+      diffuseColor.rgb *= (0.8 + 0.4 * n1) * (0.9 + 0.2 * n2);
+      float wet = (1.0 - smoothstep(0.0, 0.32, vWP.y - uLevel)) * step(vWP.x, uWetX + 0.25);
+      float mz = step(uMangroveX, vWP.x) * (1.0 - step(0.15, vWP.x));
+      diffuseColor.rgb *= mix(1.0, 0.7, mz) * mix(1.0, 0.56, wet);`,
+    rough: "roughnessFactor = mix(roughnessFactor, 0.2, wet);",
+    bump: "vec2 bp = vWP.xz * 5.0; float b0 = fbm(bp); vec3 bumpW = vec3(fbm(bp + vec2(0.2, 0.0)) - b0, 0.0, fbm(bp + vec2(0.0, 0.2)) - b0) * 0.9;",
+  }));
+  terrain.receiveShadow = true; scene.add(terrain);
+
+  // ---- cut-away sides: soil strata with wavy boundaries and pebbles, plus a dark display plinth
+  const skirtMat = patch(new THREE.MeshStandardMaterial({ roughness: 0.95, side: THREE.DoubleSide }), "skirt", {
+    fHead: GL_GROUND,
+    albedo: `vec2 sp = vec2(vWP.x + vWP.z, vWP.y);
+      float top = groundAt(vWP.xz), dd = top - vWP.y + (fbm(sp * vec2(0.9, 0.6)) - 0.5) * 0.9;   // depth below the local surface
+      float land = smoothstep(1.6, 2.6, top);
+      vec3 c = mix(vec3(0.075, 0.068, 0.06), vec3(0.17, 0.095, 0.055), 1.0 - smoothstep(6.5, 8.0, dd));   // grey bedrock -> red clay
+      c = mix(c, vec3(0.42, 0.31, 0.18), 1.0 - smoothstep(3.0, 3.8, dd));                              // clay -> sand and silt
+      c = mix(c, mix(vec3(0.16, 0.13, 0.09), vec3(0.14, 0.11, 0.06), land), 1.0 - smoothstep(0.3, 0.6, dd));   // dark topsoil / mud
+      c *= 1.0 + 0.5 * smoothstep(0.7, 0.78, fbm(sp * 7.0));
+      c *= 0.85 + 0.3 * fbm(sp * 2.4) + 0.08 * sin(dd * 9.0);
+      c *= mix(0.5, 1.0, smoothstep(-9.0, -4.5, vWP.y));
+      diffuseColor.rgb = c;`,
+  });
+  function skirt(pts) {
+    const pos = [], idx = [];
+    pts.forEach(([x, z], i) => {
+      pos.push(x, groundVis(x / XS, z), z, x, BOTTOM, z);
+      if (i > 0) { const a = (i - 1) * 2, b = i * 2; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+    });
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
+    const m = new THREE.Mesh(g, skirtMat); m.receiveShadow = true; scene.add(m);
+  }
+  const edge = []; for (let i = 0; i <= 400; i++) edge.push(-40 + i * 0.2);
+  skirt(edge.map((x) => [x, 10])); skirt(edge.map((x) => [x, -10]));
+  const side = []; for (let i = 0; i <= 100; i++) side.push(-10 + i * 0.2);
+  skirt(side.map((z) => [-40, z])); skirt(side.map((z) => [40, z]));
+  const plinthBase = new THREE.Mesh(new THREE.BoxGeometry(81, 0.6, 21), new THREE.MeshStandardMaterial({ color: lin(0x1b2427), roughness: 0.35, metalness: 0.2 }));
+  plinthBase.position.y = BOTTOM - 0.3; scene.add(plinthBase);
+
+  // ---- water: analytic swell with normals, sky reflection (Fresnel), depth colour, shoreline + whitecap foam
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(1, 20.02, mobile ? 180 : 260, mobile ? 40 : 60).rotateX(-Math.PI / 2).translate(0.5, 0, 0), new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: false,
+    vertexShader: `uniform float uTime; uniform float uStorm; uniform float uMangroveX; uniform float uK;
+      varying vec3 vW; varying vec3 vN; varying float vCrest;
+      void main(){
+        vec4 w = modelMatrix * vec4(position, 1.0);
+        float att = w.x > uMangroveX ? exp(-uK * (w.x - uMangroveX)) : 1.0;
+        float amp = (0.03 + uStorm * 0.3) * att;
+        vec4 kx = vec4(0.9, 1.7, 2.9, 4.6), kz = vec4(0.22, -0.55, 0.9, -1.5), sp = vec4(1.4, 2.0, 2.7, 3.7), am = vec4(0.5, 0.26, 0.15, 0.09);
+        float h = 0.0; vec2 g = vec2(0.0);
+        for (int i = 0; i < 4; i++) { float ph = w.x * kx[i] + w.z * kz[i] - uTime * sp[i]; h += am[i] * sin(ph); g += am[i] * cos(ph) * vec2(kx[i], kz[i]); }
+        w.y += h * amp; g *= amp;
+        vN = normalize(vec3(-g.x, 1.0, -g.y)); vCrest = h; vW = w.xyz;
+        gl_Position = projectionMatrix * viewMatrix * w;
+      }`,
+    fragmentShader: `uniform float uTime; uniform float uStorm; uniform vec3 uSunDir;
+      varying vec3 vW; varying vec3 vN; varying float vCrest;
+      ${GL_NOISE} ${GL_SKY} ${GL_GROUND}
+      void main(){
+        vec2 q = vW.xz * 3.2 + vec2(uTime * 0.35, uTime * 0.12);
+        float r0 = fbm(q);
+        vec3 n = normalize(vN + vec3(r0 - fbm(q + vec2(0.15, 0.0)), 0.0, r0 - fbm(q + vec2(0.0, 0.15))) * (1.1 + uStorm * 2.2));
+        vec3 v = normalize(cameraPosition - vW);
+        float depth = max(vW.y - groundAt(vW.xz), 0.0);
+        float fres = min(0.02 + 0.98 * pow(1.0 - max(dot(n, v), 0.0), 5.0), 0.7);
+        vec3 refl = skyCol(reflect(-v, n), uSunDir) * vec3(0.62, 0.74, 0.8);
+        vec3 body = mix(vec3(0.04, 0.22, 0.21), vec3(0.006, 0.06, 0.08), smoothstep(0.0, 2.2, depth));
+        body += vec3(0.03, 0.10, 0.07) * clamp(vCrest, 0.0, 1.0);
+        body = mix(body, vec3(0.21, 0.16, 0.09), uStorm * 0.45 * (1.0 - 0.5 * smoothstep(0.0, 4.0, depth)));
+        body *= 0.45 + 0.55 * max(dot(n, uSunDir), 0.0);
+        vec3 col = mix(body, refl, fres);
+        col += vec3(1.0, 0.86, 0.66) * pow(max(dot(n, normalize(uSunDir + v)), 0.0), 320.0) * (2.4 - uStorm * 1.8);
+        float fn = fbm(vW.xz * 8.5 + vec2(uTime * 0.5, uTime * 0.1));
+        float shore = 1.0 - smoothstep(0.0, 0.16 + uStorm * 0.3, depth);
+        float cap = smoothstep(0.45, 0.85, vCrest) * (0.08 + uStorm * 0.9);
+        float foam = clamp(shore * smoothstep(0.4, 0.62, fn) + cap * smoothstep(0.5, 0.78, fn), 0.0, 1.0);
+        col = mix(col, vec3(0.88, 0.91, 0.90), foam * 0.85);
+        float alpha = max(max(mix(0.5, 0.96, smoothstep(0.0, 1.2, depth)), foam * 0.9), fres);
+        gl_FragColor = vec4(col, alpha);
+        #include <tonemapping_fragment>
+        #include <encodings_fragment>
+      }`,
+  }));
+  water.renderOrder = 2; scene.add(water);
+  // cross-section of the water column on the cut faces, clipped to the seabed profile
+  const sideMat = new THREE.ShaderMaterial({
+    uniforms: U, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    vertexShader: "varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }",
+    fragmentShader: `uniform float uTime; uniform float uLevel; uniform float uStorm; varying vec3 vW; ${GL_NOISE}
+      void main(){
+        float d = clamp((uLevel - vW.y) / 6.0, 0.0, 1.0);
+        vec3 c = mix(vec3(0.03, 0.2, 0.21), vec3(0.003, 0.03, 0.045), pow(d, 0.6));
+        c += vec3(0.03, 0.09, 0.08) * smoothstep(0.45, 0.85, fbm(vec2(vW.x * 0.7 + vW.z * 0.7 + uTime * 0.15, vW.y * 0.25))) * (1.0 - d);
+        c += vec3(0.30, 0.50, 0.46) * (1.0 - smoothstep(0.0, 0.05, uLevel - vW.y));
+        c = mix(c, vec3(0.10, 0.08, 0.04), uStorm * 0.3);
+        gl_FragColor = vec4(c, mix(0.8, 0.94, d));
+        #include <tonemapping_fragment>
+        #include <encodings_fragment>
+      }`,
+  });
+  function sectionWall(n) {
+    const g = new THREE.BufferGeometry(), idx = [];
+    g.setAttribute("position", new THREE.BufferAttribute(new Float32Array((n + 1) * 6), 3));
+    for (let i = 0; i < n; i++) { const a = i * 2, b = a + 2; idx.push(a, b, a + 1, b, b + 1, a + 1); }
+    g.setIndex(idx); const m = new THREE.Mesh(g, sideMat); m.renderOrder = 1; m.frustumCulled = false; scene.add(m); return m;
+  }
+  const wallF = sectionWall(240), wallS = sectionWall(50);
+
+  // ---- homes: painted walls with windows, clay-tile gable roofs or flat concrete roofs with water tanks, stilts
+  const dummy = new THREE.Object3D(), tmp = new THREE.Color();
+  function gable(w, d, h, gz) {
+    const x = w / 2, z = d / 2, P = [
+      -x, 0, -z, 0, h, -z, 0, h, z, -x, 0, -z, 0, h, z, -x, 0, z,
+      x, 0, -z, x, 0, z, 0, h, z, x, 0, -z, 0, h, z, 0, h, -z,
+      -x * 0.82, 0, gz, 0, h * 0.82, gz, x * 0.82, 0, gz, x * 0.82, 0, -gz, 0, h * 0.82, -gz, -x * 0.82, 0, -gz];
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.computeVertexNormals(); return g;
+  }
+  const walls = new THREE.InstancedMesh(boxBase(0.42, 0.38, 0.42), patch(new THREE.MeshStandardMaterial({ roughness: 0.82 }), "walls", {
+    vHead: "varying vec3 vOP; varying vec3 vON; varying float vSY;",
+    vEnd: "vOP = position; vON = normal; vSY = length(instanceMatrix[1].xyz);",
+    fHead: "varying vec3 vOP; varying vec3 vON; varying float vSY;",
+    albedo: `float win = 0.0;
+      if (abs(vON.y) < 0.5) {
+        vec2 f = vec2(abs(vON.x) > 0.5 ? vOP.z : vOP.x, vOP.y);
+        float floors = vSY > 1.3 ? 2.0 : 1.0;
+        float fy = fract(f.y / 0.38 * floors), fx = fract((f.x + 0.21) / 0.42 * 2.0);
+        win = step(0.28, fx) * step(fx, 0.72) * step(0.42, fy) * step(fy, 0.8);
+        float sill = step(0.24, fx) * step(fx, 0.76) * step(0.37, fy) * step(fy, 0.42);
+        diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.025, 0.04, 0.055), win * 0.92);
+        diffuseColor.rgb *= 1.0 - sill * 0.25;
+        diffuseColor.rgb *= mix(0.48, 1.0, smoothstep(0.0, 0.09, f.y * vSY));
+        diffuseColor.rgb *= 0.93 + 0.14 * fbm(vWP.xz * 30.0 + vOP.y * 24.0);
+      }`,
+    rough: "roughnessFactor = mix(roughnessFactor, 0.08, win);",
+  }), N);
+  const roofT = new THREE.InstancedMesh(gable(0.54, 0.52, 0.2, 0.2), patch(new THREE.MeshStandardMaterial({ roughness: 0.66, side: THREE.DoubleSide }), "tiles", {
+    vHead: "varying vec3 vOP;", vEnd: "vOP = position;", fHead: "varying vec3 vOP;",
+    albedo: "diffuseColor.rgb *= 0.8 + 0.2 * step(0.42, fract(vOP.y * 75.0)); diffuseColor.rgb *= 0.88 + 0.24 * fbm(vWP.xz * 14.0);",
+  }), N);
+  const roofF = new THREE.InstancedMesh(merge([tint(boxBase(0.46, 0.05, 0.46), 0xffffff), tint(boxBase(0.46, 0.07, 0.03).translate(0, 0.05, 0.215), 0xffffff),
+    tint(new THREE.CylinderGeometry(0.045, 0.045, 0.09, 12).translate(0.11, 0.095, -0.1), 0x1f2326)]),
+  patch(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }), "flatroof", {
+    albedo: "diffuseColor.rgb *= 0.82 + 0.28 * fbm(vWP.xz * 26.0);",
+  }), N);
+  const stilt = (x, z) => boxBase(0.05, 1, 0.05).translate(x, 0, z);
+  const posts = new THREE.InstancedMesh(merge([stilt(-0.17, -0.17), stilt(0.17, -0.17), stilt(-0.17, 0.17), stilt(0.17, 0.17), boxBase(0.44, 0.06, 0.44).translate(0, 0.94, 0)]),
+    new THREE.MeshStandardMaterial({ color: lin(0x8d8880), roughness: 0.88 }), N);
+  [walls, roofT, roofF, posts].forEach((m) => { m.castShadow = true; m.receiveShadow = true; scene.add(m); });
+  const wallPaint = HX.map((_, i) => lin(WALL_PAINT[(i * 7) % WALL_PAINT.length]));
+  const tileCol = HX.map((_, i) => lin(ROOF_TILE[i % ROOF_TILE.length]));
+  const flatCol = HX.map((_, i) => lin(ROOF_FLAT[(i * 3) % ROOF_FLAT.length]));
+  const wallWet = lin(0xff5a47), roofWet = lin(0xff5a47);
+  let plinthNow = -1;
+  function placeHomes(plinth) {
+    if (plinth === plinthNow) return; plinthNow = plinth; renderer.shadowMap.needsUpdate = true;
+    const E = 1e-4;
+    for (let i = 0; i < N; i++) {
+      const k = HOME_KIND[i], x = HX[i] * XS, z = HOME_ZPOS[i], g = HZ[i], sy = k.tall ? 1.75 : 1, base = g + plinth, top = base + 0.38 * sy;
+      dummy.rotation.set(0, (i % 7) * 0.22, 0);
+      dummy.position.set(x, base, z); dummy.scale.set(k.sx, sy, k.sz); dummy.updateMatrix(); walls.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(x, top, z);
+      dummy.scale.set(k.flat ? E : k.sx, 1, k.flat ? E : k.sz); dummy.updateMatrix(); roofT.setMatrixAt(i, dummy.matrix);
+      dummy.scale.set(k.flat ? k.sx : E, 1, k.flat ? k.sz : E); dummy.updateMatrix(); roofF.setMatrixAt(i, dummy.matrix);
+      dummy.position.set(x, g, z); dummy.scale.set(k.sx, Math.max(plinth, E), k.sz); dummy.updateMatrix(); posts.setMatrixAt(i, dummy.matrix);
+    }
+    [walls, roofT, roofF, posts].forEach((m) => { m.instanceMatrix.needsUpdate = true; });
+    posts.visible = plinth > 0.01;
+  }
+  function colorHomes(mask, depth) {
+    for (let i = 0; i < N; i++) {
+      const wet = mask && mask[i];
+      walls.setColorAt(i, wet ? tmp.copy(wallPaint[i]).lerp(wallWet, Math.min(1, 0.55 + (depth ? depth[i] : 0.5) * 0.35)) : wallPaint[i]);
+      roofT.setColorAt(i, wet ? roofWet : tileCol[i]);
+      roofF.setColorAt(i, wet ? roofWet : flatCol[i]);
+    }
+    walls.instanceColor.needsUpdate = roofT.instanceColor.needsUpdate = roofF.instanceColor.needsUpdate = true;
+  }
+
+  // ---- coconut palms between the houses (wind sway grows with the storm)
+  const swayMat = (key, amp, base) => patch(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.78, side: THREE.DoubleSide }), key, {
+    vBegin: `float sw = sin(uTime * 1.3 + instanceMatrix[3].x * 0.7 + instanceMatrix[3].z) * ${amp} * (1.0 + uStorm * 3.0) * max(position.y - ${base}, 0.0);
+      transformed.x += sw; transformed.z += sw * 0.45;`,
+    albedo: "diffuseColor.rgb *= 0.8 + 0.4 * fbm(vWP.xz * 16.0 + vWP.y * 8.0);",
+  });
+  {
+    const trunkG = new THREE.CylinderGeometry(0.022, 0.038, 1.1, 6, 6).translate(0, 0.55, 0), p = trunkG.attributes.position;
+    for (let i = 0; i < p.count; i++) p.setX(i, p.getX(i) + 0.09 * (p.getY(i) / 1.1) ** 2);
+    trunkG.computeVertexNormals(); tint(trunkG, 0x7a6448);
+    const P = [], top = [0.09, 1.1, 0];
+    for (let j = 0; j < 8; j++) {
+      const a = j / 8 * Math.PI * 2 + 0.3, ca = Math.cos(a), sa = Math.sin(a), L = 0.4 + (j % 3) * 0.06;
+      const pt = (t, sd) => { const w = 0.075 * Math.sin(Math.PI * Math.min(1, t * 1.1)) * sd; return [top[0] + ca * L * t - sa * w, top[1] + 0.12 * t - 0.34 * t * t, top[2] + sa * L * t + ca * w]; };
+      for (let s = 0; s < 5; s++) { const a0 = pt(s / 5, -1), b0 = pt(s / 5, 1), a1 = pt((s + 1) / 5, -1), b1 = pt((s + 1) / 5, 1); P.push(...a0, ...b0, ...a1, ...b0, ...b1, ...a1); }
+    }
+    const fr = new THREE.BufferGeometry(); fr.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); fr.computeVertexNormals(); tint(fr, 0x3d6a2a);
+    const grid = new Map(), cell = (x, z) => `${Math.floor(x / 0.5)},${Math.floor(z / 0.5)}`;
+    HX.forEach((hx, i) => { const k = cell(hx * XS, HOME_ZPOS[i]); if (!grid.has(k)) grid.set(k, []); grid.get(k).push([hx * XS, HOME_ZPOS[i]]); });
+    const clear = (x, z) => {
+      const cx = Math.floor(x / 0.5), cz = Math.floor(z / 0.5);
+      for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const [px, pz] of grid.get(`${cx + a},${cz + b}`) || []) if ((px - x) ** 2 + (pz - z) ** 2 < 0.12) return false;
+      return true;
+    };
+    const NP = mobile ? 150 : 280, r3 = rng(11), palms = new THREE.InstancedMesh(merge([trunkG, fr]), swayMat("palm", "0.035", "0.3"), NP);
+    let n = 0;
+    for (let t = 0; n < NP && t < 30000; t++) {
+      const x = 1.05 + r3() * 38, z = -9.5 + r3() * 19, s = 0.8 + r3() * 0.5;
+      if (!clear(x, z)) continue;
+      dummy.position.set(x, groundVis(x / XS, z), z); dummy.rotation.set(0, r3() * 6.28, 0); dummy.scale.set(s, s, s); dummy.updateMatrix();
+      palms.setMatrixAt(n, dummy.matrix); palms.setColorAt(n, tmp.setRGB(1, 1, 1).offsetHSL(0, 0, (r3() - 0.5) * 0.12)); n++;
+    }
+    palms.count = n; palms.castShadow = true; palms.receiveShadow = true; scene.add(palms);
+  }
+
+  // ---- mangroves: arching prop roots, tapered trunk, clumped canopy with baked occlusion
+  const NT = 520, r2 = rng(5), TREE = [];
+  for (let i = 0; i < NT; i++) TREE.push({ x: -0.3 - r2() * 15.9, z: -9.6 + 19.2 * r2(), s: 0.75 + r2() * 0.5 });
+  TREE.forEach((t) => { if (t.x > -7.4 && Math.abs(t.z - 7.6) < 0.4) t.z += t.z > 7.6 ? 0.45 : -0.45; });   // keep the jetty line clear
+  TREE.sort((a, b) => b.x - a.x);
+  let wood, canopy;
+  {
+    const r = rng(23), parts = [new THREE.CylinderGeometry(0.045, 0.085, 1.7, 7).translate(0, 1.85, 0)];
+    for (let k = 0; k < 6; k++) {
+      const a = k / 6 * Math.PI * 2 + r() * 0.5, R = 0.32 + r() * 0.2, y0 = 1.05 + r() * 0.35;
+      parts.push(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(new THREE.Vector3(0, y0, 0),
+        new THREE.Vector3(Math.cos(a) * R * 0.75, y0 + 0.12, Math.sin(a) * R * 0.75), new THREE.Vector3(Math.cos(a) * R, -0.05, Math.sin(a) * R)), 7, 0.022, 4, false));
+    }
+    const leaves = [[0, 2.85, 0, 0.62], [0.38, 2.7, 0.1, 0.46], [-0.33, 2.72, -0.15, 0.48], [0.05, 2.64, 0.4, 0.43], [-0.1, 2.68, -0.42, 0.44], [0.02, 3.18, -0.02, 0.4]].map(([x, y, z, s]) => {
+      const g = new THREE.IcosahedronGeometry(s, 1), p = g.attributes.position, nr = g.attributes.normal, col = new Float32Array(p.count * 3);
+      for (let i = 0; i < p.count; i++) {
+        const vx = p.getX(i), vy = p.getY(i), vz = p.getZ(i), j = 0.82 + 0.32 * vnoise(vx * 9 + x * 3 + 7, vz * 9 + vy * 7);
+        nr.setXYZ(i, vx / s, vy / s, vz / s);
+        p.setXYZ(i, vx * j + x, vy * j * 0.8 + y, vz * j + z);
+        const ao = 0.5 + 0.5 * Math.min(1, Math.max(0, (vy / s + 1) / 2)); col.set([ao, ao, ao], i * 3);
+      }
+      g.setAttribute("color", new THREE.BufferAttribute(col, 3)); return g;
+    });
+    wood = new THREE.InstancedMesh(merge(parts.map((g) => tint(g, 0x5a4734))), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }), NT);
+    canopy = new THREE.InstancedMesh(merge(leaves), patch(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.72 }), "leaves", {
+      vBegin: "float sw = sin(uTime * 1.1 + instanceMatrix[3].z * 1.3) * 0.025 * (1.0 + uStorm * 2.5) * max(position.y - 2.2, 0.0); transformed.x += sw; transformed.z += sw * 0.5;",
+      albedo: "diffuseColor.rgb *= 0.72 + 0.5 * fbm(vWP.xz * 14.0 + vWP.y * 9.0);",
+      bump: "vec2 bp = vWP.xz * 16.0 + vWP.y * 11.0; float b0 = fbm(bp); vec3 bumpW = vec3(fbm(bp + vec2(0.3, 0.0)) - b0, 0.0, fbm(bp + vec2(0.0, 0.3)) - b0) * 1.6;",
+    }), NT);
+    wood.castShadow = canopy.castShadow = true; canopy.receiveShadow = true; scene.add(wood, canopy);
+  }
+  const leafG = lin(0x2d6e45), leafD = lin(0x8a6d3b);
+  let mangKey = "";
+  function setMangroves(widthM, health) {
+    const key = `${widthM}|${health}`; if (key === mangKey) return; mangKey = key; renderer.shadowMap.needsUpdate = true;
+    const edgeX = -widthM * XS;
+    for (let i = 0; i < NT; i++) {
+      const t = TREE[i], on = t.x >= edgeX && widthM > 0, s = on ? t.s * (0.55 + 0.45 * health) : 1e-4;
+      dummy.position.set(t.x, groundVis(t.x / XS, t.z), t.z); dummy.rotation.set(0, i, 0); dummy.scale.set(s, s, s); dummy.updateMatrix();
+      wood.setMatrixAt(i, dummy.matrix); canopy.setMatrixAt(i, dummy.matrix);
+      canopy.setColorAt(i, tmp.copy(leafG).lerp(leafD, 1 - health).offsetHSL(((i % 7) - 3) * 0.006, 0, ((i % 5) - 2) * 0.012));
+    }
+    wood.instanceMatrix.needsUpdate = canopy.instanceMatrix.needsUpdate = canopy.instanceColor.needsUpdate = true;
+    U.uMangroveX.value = widthM > 0 ? edgeX : 1e3;
+  }
+
+  // ---- embankment: trapezoidal levee, rock armour on the sea face, concrete crest and parapet, grassed land face
+  const EMB_X = 0.45, EMB_BASE = 1.2, PARAPET = 0.12;
+  const levee = (() => {
+    const pts = [[-0.45, 0], [-0.13, 1], [0.17, 1], [0.45, 0]], Z = 10.05, P = [], groups = [];
+    const quad = (a, b, m) => { groups.push([P.length / 3, 6, m]); P.push(a[0], a[1], -Z, b[0], b[1], -Z, b[0], b[1], Z, a[0], a[1], -Z, b[0], b[1], Z, a[0], a[1], Z); };
+    quad(pts[0], pts[1], 0); quad(pts[1], pts[2], 1); quad(pts[2], pts[3], 2);
+    [-Z, Z].forEach((z) => { groups.push([P.length / 3, 6, 0]); P.push(pts[0][0], 0, z, pts[1][0], 1, z, pts[2][0], 1, z, pts[0][0], 0, z, pts[2][0], 1, z, pts[3][0], 0, z); });
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.computeVertexNormals();
+    groups.forEach(([s, n, m]) => g.addGroup(s, n, m));
+    const concrete = patch(new THREE.MeshStandardMaterial({ color: lin(0xa9aaa4), roughness: 0.8, side: THREE.DoubleSide }), "concrete", {
+      albedo: "diffuseColor.rgb *= 0.85 + 0.25 * fbm(vWP.xz * 20.0 + vWP.y * 13.0);",
+    });
+    const grass = patch(new THREE.MeshStandardMaterial({ color: lin(0x5f7f3c), roughness: 0.95, side: THREE.DoubleSide }), "levgrass", {
+      albedo: "diffuseColor.rgb *= 0.75 + 0.45 * fbm(vWP.zy * 18.0 + vWP.x * 9.0);",
+    });
+    const m = new THREE.Mesh(g, [concrete, concrete, grass]); m.castShadow = m.receiveShadow = true; scene.add(m); return m;
+  })();
+  const parapet = new THREE.Mesh(boxBase(0.07, PARAPET, 20.1), new THREE.MeshStandardMaterial({ color: lin(0xc4c5bf), roughness: 0.7 }));
+  parapet.castShadow = parapet.receiveShadow = true; scene.add(parapet);
+  const MAXR = 3600, rockG = new THREE.IcosahedronGeometry(0.075, 0);
+  { const p = rockG.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i), y = p.getY(i), z = p.getZ(i), j = 0.72 + 0.56 * vnoise(x * 40 + 3, z * 40 + y * 30); p.setXYZ(i, x * j, y * j * 0.7, z * j); } rockG.computeVertexNormals(); }
+  const rocks = new THREE.InstancedMesh(rockG, new THREE.MeshStandardMaterial({ roughness: 0.9, flatShading: true }), MAXR);
+  rocks.castShadow = rocks.receiveShadow = true; scene.add(rocks);
+  let crestNow = -1;
+  function setCrest(crest) {
+    if (crest === crestNow) return; crestNow = crest; renderer.shadowMap.needsUpdate = true;
+    const on = crest > EMB_BASE + 0.05; levee.visible = parapet.visible = rocks.visible = on;
+    if (!on) return;
+    const h = Math.max(0.05, crest - EMB_BASE - PARAPET);
+    levee.scale.y = h; levee.position.set(EMB_X, EMB_BASE, 0);
+    parapet.position.set(EMB_X - 0.095, EMB_BASE + h, 0);
+    const len = Math.hypot(0.32, h), nx = -h / len, ny = 0.32 / len, rows = Math.min(20, Math.max(1, Math.floor(len * 0.8 / 0.11))), per = 170, r = rng(31);
+    let n = 0;
+    for (let row = 0; row < rows; row++) for (let k = 0; k < per && n < MAXR; k++) {
+      const u = (row + 0.5 + (r() - 0.5) * 0.4) / rows * 0.8;
+      dummy.position.set(EMB_X - 0.45 + 0.32 * u + nx * 0.025, EMB_BASE + h * u + ny * 0.025, -10 + (k + r() * 0.8) * 20 / per);
+      dummy.rotation.set(r() * 3, r() * 3, r() * 3); const s = 0.75 + r() * 0.6; dummy.scale.set(s, s, s); dummy.updateMatrix();
+      rocks.setMatrixAt(n, dummy.matrix); rocks.setColorAt(n, tmp.copy(lin(0x8a867c)).offsetHSL(0, 0, (r() - 0.5) * 0.12)); n++;
+    }
+    rocks.count = n; rocks.instanceMatrix.needsUpdate = true; if (rocks.instanceColor) rocks.instanceColor.needsUpdate = true;
+  }
+
+  // ---- life on the coast: fishing boats, a jetty, a lighthouse islet, gulls, a cloud bank, storm rain and lightning
+  const tick = [];                                       // per-frame updaters: f(t, dt, storm)
+  const WK = [[0.9, 0.22, 1.4, 0.5], [1.7, -0.55, 2.0, 0.26], [2.9, 0.9, 2.7, 0.15], [4.6, -1.5, 3.7, 0.09]];
+  function swell(x, z, t, amp) {                          // the water shader's swell, evaluated on the CPU
+    let h = 0, gx = 0, gz = 0;
+    for (const [kx, kz, sp, am] of WK) { const ph = x * kx + z * kz - t * sp, c = Math.cos(ph) * am; h += am * Math.sin(ph); gx += c * kx; gz += c * kz; }
+    return [h * amp, gx * amp, gz * amp];
+  }
+  const woodMat = patch(new THREE.MeshStandardMaterial({ color: lin(0x7a5f43), roughness: 0.85 }), "wood", {
+    albedo: "diffuseColor.rgb *= 0.78 + 0.3 * fbm(vec2(vWP.x * 40.0 + vWP.z * 40.0, vWP.y * 3.0));",
+  });
+  // fishing boats: painted hulls bob and pitch on the same swell as the water surface
+  {
+    const NB = 9, hull = new THREE.BoxGeometry(0.62, 0.12, 0.2, 8, 1, 1), p = hull.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), t = Math.min(1, Math.abs(x) / 0.31);
+      let z = p.getZ(i) * (1 - Math.pow(t, x > 0 ? 2.2 : 6) * 0.9); if (y < 0) z *= 0.55;
+      p.setZ(i, z); if (y > 0) p.setY(i, y + Math.pow(t, 2) * 0.05);
+    }
+    hull.computeVertexNormals();
+    const top = merge([tint(boxBase(0.15, 0.1, 0.12).translate(-0.13, 0.05, 0), 0xece6da), tint(boxBase(0.17, 0.015, 0.14).translate(-0.13, 0.15, 0), 0x2c3a40),
+      tint(new THREE.CylinderGeometry(0.007, 0.01, 0.44, 5).translate(0.07, 0.28, 0), 0x4e3f30), tint(boxBase(0.012, 0.012, 0.16).translate(0.07, 0.38, 0), 0x4e3f30)]);
+    const hulls = new THREE.InstancedMesh(hull, new THREE.MeshStandardMaterial({ roughness: 0.55 }), NB);
+    const decks = new THREE.InstancedMesh(top, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7 }), NB);
+    const HC = [0x2a6fb0, 0xc0392b, 0xe2a52a, 0x2f8f5b, 0x1f4e79, 0xd35400], r = rng(17), boats = [];
+    for (let i = 0; i < NB; i++) { boats.push({ x: -37 + r() * 14, z: -8.5 + r() * 17, yaw: r() * 6.28, v: 0.15 + r() * 0.35 }); hulls.setColorAt(i, lin(HC[i % HC.length])); }
+    scene.add(hulls, decks);
+    tick.push((t, dt, storm) => {
+      const amp = 0.03 + storm * 0.3, T = U.uTime.value;
+      boats.forEach((b, i) => {
+        const v = b.v * (1 - storm * 0.8);
+        b.x += Math.cos(b.yaw) * v * dt; b.z -= Math.sin(b.yaw) * v * dt;
+        if (b.x < -38.5 || b.x > -23) b.yaw = Math.PI - b.yaw; if (b.z < -9.2 || b.z > 9.2) b.yaw = -b.yaw;
+        b.x = Math.max(-38.5, Math.min(-23, b.x)); b.z = Math.max(-9.2, Math.min(9.2, b.z));
+        const [h, gx, gz] = swell(b.x, b.z, T, amp), cy = Math.cos(b.yaw), sy = Math.sin(b.yaw);
+        dummy.position.set(b.x, state.level + h, b.z); dummy.rotation.order = "YZX";
+        dummy.rotation.set(-Math.atan(gx * sy + gz * cy), b.yaw, Math.atan(gx * cy - gz * sy)); dummy.scale.set(1, 1, 1); dummy.updateMatrix();
+        hulls.setMatrixAt(i, dummy.matrix); decks.setMatrixAt(i, dummy.matrix);
+      });
+      dummy.rotation.order = "XYZ"; hulls.instanceMatrix.needsUpdate = decks.instanceMatrix.needsUpdate = true;
+    });
+  }
+  // wooden jetty through the mangroves (they are kept clear of its line)
+  const JZ = 7.6;
+  {
+    const deck = new THREE.Mesh(boxBase(7.0, 0.05, 0.22).translate(-3.5, 0, 0), woodMat);
+    deck.position.set(0, 3.1, JZ); deck.castShadow = deck.receiveShadow = true; scene.add(deck);
+    const n = 30, posts = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.018, 0.022, 1, 6).translate(0, 0.5, 0), woodMat, n);
+    for (let i = 0; i < n; i++) {
+      const x = -0.15 - Math.floor(i / 2) * 0.48, z = JZ + (i % 2 ? 0.09 : -0.09), g = groundVis(x / XS, z);
+      dummy.position.set(x, g, z); dummy.rotation.set(0, 0, 0); dummy.scale.set(1, 3.1 - g, 1); dummy.updateMatrix(); posts.setMatrixAt(i, dummy.matrix);
+    }
+    posts.castShadow = true; scene.add(posts);
+  }
+  // lighthouse on a rock stack offshore, with a sweeping beam that strengthens in the storm
+  let beam, lantern;
+  {
+    const LX = -19.5, LZ = 6.2, base = groundVis(LX / XS, LZ) - 0.3, top = 4.7, H = top - base;
+    const rockG = new THREE.CylinderGeometry(0.95, 1.55, H, 18, 8), p = rockG.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, x), j = 0.8 + 0.4 * vnoise(a * 2.2 + 3, y * 1.3 + 7);
+      if (Math.abs(y) < H / 2 - 0.01) { p.setX(i, x * j); p.setZ(i, z * j); }
+    }
+    rockG.computeVertexNormals();
+    const stack = new THREE.Mesh(rockG, new THREE.MeshStandardMaterial({ color: lin(0x6f6a60), roughness: 0.95, flatShading: true }));
+    stack.position.set(LX, base + H / 2, LZ); stack.castShadow = stack.receiveShadow = true; scene.add(stack);
+    const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.22, 2.4, 24).translate(0, 1.2, 0), patch(new THREE.MeshStandardMaterial({ roughness: 0.5 }), "lighthouse", {
+      vHead: "varying vec3 vOP;", vEnd: "vOP = position;", fHead: "varying vec3 vOP;",
+      albedo: "diffuseColor.rgb = mix(vec3(0.93, 0.92, 0.88), vec3(0.62, 0.07, 0.05), step(0.5, fract(vOP.y / 0.6))); diffuseColor.rgb *= 0.92 + 0.12 * fbm(vOP.xz * 40.0 + vOP.y * 9.0);",
+    }));
+    tower.position.set(LX, top, LZ); tower.castShadow = true; scene.add(tower);
+    const dark = new THREE.MeshStandardMaterial({ color: lin(0x22282b), roughness: 0.4, metalness: 0.6 });
+    const gallery = new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.05, 24), dark); gallery.position.set(LX, top + 2.42, LZ); scene.add(gallery);
+    lantern = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.24, 16), new THREE.MeshStandardMaterial({ color: lin(0xfff1c8), emissive: lin(0xffd27a), emissiveIntensity: 1.2, roughness: 0.1 }));
+    lantern.position.set(LX, top + 2.57, LZ); scene.add(lantern);
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.2, 16), dark); cap.position.set(LX, top + 2.79, LZ); scene.add(cap);
+    beam = new THREE.Mesh(new THREE.ConeGeometry(0.55, 9, 24, 1, true).translate(0, -4.5, 0).rotateZ(Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: lin(0xffe2a0), transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    beam.position.copy(lantern.position); scene.add(beam);
+    tick.push((t, dt, storm) => {
+      beam.rotation.y = t * 0.9; beam.material.opacity = 0.06 + storm * 0.22;
+      lantern.material.emissiveIntensity = 1.2 + storm * 2.5;
+    });
+  }
+  // gulls wheeling over the shore (they take shelter when the storm arrives)
+  {
+    const NG = mobile ? 12 : 22, P = [0.05, 0, 0, -0.04, 0, 0, 0, 0, 0.2, 0.05, 0, 0, 0, 0, -0.2, -0.04, 0, 0];
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g.computeVertexNormals();
+    const gulls = new THREE.InstancedMesh(g, patch(new THREE.MeshStandardMaterial({ color: lin(0xf4f4f0), roughness: 0.8, side: THREE.DoubleSide }), "gull", {
+      vBegin: "transformed.y += sin(uTime * 9.0 + instanceMatrix[3].x * 3.0 + instanceMatrix[3].z) * abs(position.z) * 0.9;",
+    }), NG);
+    const r = rng(29), G = [];
+    for (let i = 0; i < NG; i++) G.push({ cx: -14 + r() * 20, cz: -6 + r() * 12, rad: 1.5 + r() * 3.5, y: 6 + r() * 3, w: (0.25 + r() * 0.3) * (r() < 0.5 ? -1 : 1), a: r() * 6.28, s: 0.8 + r() * 0.5 });
+    let away = 0; scene.add(gulls);
+    tick.push((t, dt, storm) => {
+      away += ((storm > 0.45 ? 1 : 0) - away) * Math.min(1, dt * 1.5);
+      G.forEach((b, i) => {
+        b.a += b.w * dt; const x = b.cx + Math.cos(b.a) * b.rad, z = b.cz + Math.sin(b.a) * b.rad;
+        dummy.position.set(x, b.y + Math.sin(t * 0.7 + i) * 0.3 + away * 12, z);
+        dummy.rotation.set(0, -b.a - (b.w > 0 ? Math.PI / 2 : -Math.PI / 2), Math.sin(t + i) * 0.15);
+        const s = b.s * (1 - away); dummy.scale.set(s, s, s); dummy.updateMatrix(); gulls.setMatrixAt(i, dummy.matrix);
+      });
+      gulls.instanceMatrix.needsUpdate = true;
+    });
+  }
+  // storm clouds: a bank rolls in behind the diorama and over the open sea as the storm builds
+  {
+    const cv = document.createElement("canvas"); cv.width = 256; cv.height = 128; const cx = cv.getContext("2d"), r = rng(41);
+    for (let k = 0; k < 14; k++) {
+      const rad = 18 + r() * 22, x = 50 + r() * 156, y = 46 + r() * 36, gr = cx.createRadialGradient(x, y, 0, x, y, Math.min(rad, x - 4, 252 - x, y - 4, 124 - y));
+      gr.addColorStop(0, "rgba(255,255,255,0.85)"); gr.addColorStop(0.6, "rgba(255,255,255,0.35)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+      cx.fillStyle = gr; cx.fillRect(0, 0, 256, 128);
+    }
+    const tex = new THREE.CanvasTexture(cv); tex.encoding = THREE.sRGBEncoding;
+    const clouds = [], fair = lin(0xffffff), grey = lin(0x59636a);
+    for (let i = 0; i < 16; i++) {
+      const m = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.6, color: fair.clone() });
+      const s = new THREE.Sprite(m), back = i < 11, w = 10 + r() * 14;
+      s.position.set(-60 + r() * 120, back ? 3 + r() * 12 : 11 + r() * 4, back ? -16 - r() * 18 : -12 + r() * 24);
+      if (!back) s.position.x = -40 + r() * 18;
+      s.scale.set(w, w * 0.45, 1); s.userData.v = 0.2 + r() * 0.35; s.renderOrder = 3; clouds.push(s); scene.add(s);
+    }
+    tick.push((t, dt, storm) => clouds.forEach((s) => {
+      s.position.x += s.userData.v * dt * (1 + storm * 3); if (s.position.x > 62) s.position.x = -62;
+      s.material.color.copy(fair).lerp(grey, 0.4 + storm * 0.6); s.material.opacity = storm * 0.75; s.visible = storm > 0.02;
+    }));
+  }
+  // rain: streaks that fall in the vertex shader, fading in with the storm, plus the odd lightning flash
+  {
+    const NR = mobile ? 1400 : 3200, pos = new Float32Array(NR * 6), topA = new Float32Array(NR * 2), r = rng(53);
+    for (let i = 0; i < NR; i++) { const x = -42 + r() * 84, y = r() * 22, z = -12 + r() * 24; pos.set([x, y, z, x, y, z], i * 6); topA[i * 2 + 1] = 1; }
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("aTop", new THREE.BufferAttribute(topA, 1));
+    const rain = new THREE.LineSegments(g, new THREE.ShaderMaterial({
+      uniforms: U, transparent: true, depthWrite: false,
+      vertexShader: `uniform float uTime; uniform float uStorm; attribute float aTop; varying float vA;
+        void main(){ vec3 p = position; float y = mod(p.y - uTime * 16.0, 22.0) - 6.0; p.x += (y + 6.0) * 0.18 * uStorm - aTop * 0.08 * uStorm; p.y = y + aTop * 0.45;
+          vA = smoothstep(0.35, 0.85, uStorm); gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0); }`,
+      fragmentShader: `varying float vA; void main(){ gl_FragColor = vec4(0.75, 0.8, 0.84, 0.35 * vA);
+        #include <tonemapping_fragment>
+        #include <encodings_fragment>
+      }`,
+    }));
+    rain.frustumCulled = false; scene.add(rain);
+    let flash = 0, nextFlash = 3;
+    tick.push((t, dt, storm) => {
+      rain.visible = storm > 0.3;
+      if (storm > 0.75 && !reduce && t > nextFlash) { flash = 1; nextFlash = t + 4 + Math.random() * 7; }
+      flash = Math.max(0, flash - dt * 4);
+      sun.intensity = 1.8 * (1 - 0.6 * storm) + flash * 2.5;
+      hemi.intensity = 0.15 + 0.12 * storm + flash * 1.2;
+      renderer.toneMappingExposure = 0.9 - 0.12 * storm;
+    });
+  }
+
+  // ---- water level + extent (the section walls follow the seabed so soil is never tinted blue)
+  const state = { level: 1.7, target: 1.7, storm: 0, stormTarget: 0, xmax: 40 };
+  function fillWall(mesh, n, along) {
+    const L = state.level, xmax = state.xmax < EMB_X ? EMB_X + 0.1 : state.xmax, a = mesh.geometry.attributes.position;
+    for (let i = 0; i <= n; i++) {
+      const [x, z] = along(i), b = groundVis(x / XS, z), top = x <= xmax ? Math.max(b, L) : b;
+      a.setXYZ(i * 2, x, top, z); a.setXYZ(i * 2 + 1, x, b, z);
+    }
+    a.needsUpdate = true;
+  }
+  let lastL = NaN, lastX = NaN;
+  function layoutWater() {
+    const L = state.level, xmax = state.xmax < EMB_X ? EMB_X + 0.1 : state.xmax;
+    water.scale.x = xmax + 40; water.position.set(-40, L, 0);
+    U.uLevel.value = L; U.uWetX.value = state.xmax < EMB_X ? state.xmax : xmax;
+    if (Math.abs(L - lastL) > 1e-4 || xmax !== lastX) {
+      lastL = L; lastX = xmax;
+      fillWall(wallF, 240, (i) => [-40 + i * 80 / 240, 9.995]);
+      fillWall(wallS, 50, (i) => [-39.995, -10 + i * 20 / 50]);
+    }
+  }
+  // ---- camera: damped follow with a slow cinematic drift
+  const cam = { pos: new THREE.Vector3(-26, 30, 44), target: new THREE.Vector3(4, 1, 0), pt: new THREE.Vector3(-26, 30, 44), tt: new THREE.Vector3(4, 1, 0) };
+  function resize() {
+    const w = canvas.clientWidth, h = canvas.clientHeight; if (!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w / h;
+    camera.fov = w / h < 1 ? 52 : 36; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(canvas); resize();
+  let visible = true; new IntersectionObserver((es) => { visible = es[0].isIntersecting; }).observe(canvas);
+  const clock = new THREE.Clock(), drift = new THREE.Vector3();
+  let ft = 0, fc = 0, first = true;
+  function frame() {
+    requestAnimationFrame(frame);
+    if (!visible || document.hidden) { clock.getDelta(); return; }
+    const dt = Math.min(clock.getDelta(), 0.05), e = reduce ? 1 : 1 - Math.exp(-dt * 4.5), ec = reduce ? 1 : 1 - Math.exp(-dt * 2.8);
+    state.level += (state.target - state.level) * e; state.storm += (state.stormTarget - state.storm) * e;
+    cam.pos.lerp(cam.pt, ec); cam.target.lerp(cam.tt, ec);
+    const t = clock.elapsedTime;
+    camera.position.copy(cam.pos);
+    if (!reduce) camera.position.add(drift.set(Math.sin(t * 0.21) * 0.35, Math.sin(t * 0.17) * 0.18, Math.cos(t * 0.13) * 0.3));
+    camera.lookAt(cam.target);
+    U.uTime.value += reduce ? 0 : dt; U.uStorm.value = state.storm;
+    tick.forEach((f) => f(t, dt, state.storm));
+    layoutWater();
+    renderer.render(scene, camera);
+    if (first) { first = false; canvas.classList.add("ready"); }
+    // adaptive resolution: drop the pixel ratio if frames run slower than ~38 fps
+    ft += dt; fc++;
+    if (fc === 90) { if (ft / fc > 1 / 38 && pr > 1) { pr = Math.max(1, pr - 0.5); renderer.setPixelRatio(pr); resize(); } ft = 0; fc = 0; }
+  }
+  placeHomes(0); colorHomes(null); setMangroves(0, 1); setCrest(0); layoutWater(); frame();
+  return {
+    camera: cam, state, canvas,
+    setWater(level, storm, xmax = 40) { state.target = level; state.stormTarget = storm; state.xmax = xmax; },
+    setHomes(mask, depth, plinth = 0) { placeHomes(plinth); colorHomes(mask, depth); },
+    setMangroves, setCrest, EMB_X,
+    jump() { state.level = state.target; state.storm = state.stormTarget; cam.pos.copy(cam.pt); cam.target.copy(cam.tt); },
+  };
+}
+
+// ===================================================================== story (scroll-driven)
+const OBS = D.obs, P5 = D.projections["SSP5-8.5"], P2 = D.projections["SSP2-4.5"];
+const gAt = (y, P) => (y <= M.last ? OBS.gmsl[OBS.year.indexOf(y)] : P.gmsl[P.year.indexOf(y)]);
+const lastG = D.gmsl_last;
+const HYBRID = D.measures["Hybrid (mangrove + low embankment)"];
+const STEPS = [
+  { year: 2024, P: P5, storm: 0, m: {}, cam: [-30, 30, 46], tgt: [4, 0.5, 0] },
+  { year: 1880, P: P5, storm: 0, m: {}, cam: [-20, 13, 30], tgt: [-2, 1.5, 0] },
+  { year: 2024, P: P5, storm: 0, m: {}, cam: [-9, 8.5, 24], tgt: [6, 2.4, 0] },
+  { year: 2100, P: P5, storm: 0, m: {}, cam: [4, 9, 25], tgt: [8, 2.8, 0] },
+  { year: 2100, P: P5, storm: 1, m: {}, cam: [-6, 19, 31], tgt: [10, 3, 0] },
+  { year: 2050, P: P2, storm: 1, m: HYBRID, cam: [-24, 15, 28], tgt: [-1, 2, 0] },
+];
+const story = makeDiorama($("#scene"), () => { $("#webgl-off").hidden = false; });
+function seaFor(step) {
+  const slr = step.year <= M.last ? (gAt(step.year, step.P) - lastG) / 1000 : localSlr(gAt(step.year, step.P), step.year);
+  if (!step.storm) return { slr, level: slr + S.sea.mhhw, flooded: 0, mask: null, held: true };
+  const ev = event(slr, 100, step.m, 1);
+  return { slr, level: ev.level, flooded: ev.flooded, mask: ev.mask, depth: ev.depth, held: ev.held };
+}
+const stepSea = STEPS.map(seaFor);
+// copy into the step cards
+{
+  const rise = (lastG - OBS.gmsl[0]) / 10;
+  $("#st1-big").textContent = `−${rise.toFixed(0)} cm`;
+  $("#st1-p").textContent = `In 1880 the global ocean stood ${rise.toFixed(0)} cm lower than in 2024. For most of the 19th century it barely moved.`;
+  $("#st2-big").textContent = `${fmt(M.rate_obs, 1)} mm a year`;
+  $("#st2-p").textContent = `Satellites now measure ${fmt(M.rate_obs, 1)} mm of rise every year, more than twice the 20th-century average of ${fmt(D.rate_20c, 1)} mm. The rise is accelerating.`;
+  const g21 = P5.gmsl.at(-1) / 1000, ar = D.ar6["SSP5-8.5"];
+  $("#st3-big").textContent = `+${fmt(g21, 2)} m`;
+  $("#st3-p").textContent = `Tideline's forecast for 2100 on a high-emissions path, relative to 1995–2014. IPCC AR6's likely range is ${ar[1]}–${ar[2]} m, and the IPCC does not rule out more if ice sheets destabilise.`;
+  $("#st4-big").textContent = `${stepSea[4].flooded} of ${N} homes`;
+  $("#st4-p").textContent = `A once-a-century storm reaches ${fmt(stepSea[4].level, 2)} m above today's mean sea. With no defences, water fills every street below that line.`;
+  $("#st5-big").textContent = stepSea[5].held ? "The line holds" : `${stepSea[5].flooded} homes flooded`;
+  $("#st5-p").textContent = `In 2050, a 300 m mangrove belt takes the energy out of the waves and a 3.8 m embankment stops the rest. The real question is how long that lasts. The simulator finds the year each defence fails.`;
+}
+// tide gauge on the left of the stage
+const GMIN = -0.6, GMAX = 4.6;
+{
+  const g = $("#gauge");
+  for (let v = 0; v <= 4.5; v += 0.5) {
+    const t = document.createElement("div"); t.className = "gauge-tick"; t.style.top = `${(1 - (v - GMIN) / (GMAX - GMIN)) * 100}%`;
+    t.innerHTML = `<span>${v.toFixed(1)} m</span>`; g.appendChild(t);
+  }
+  const mk = document.createElement("div"); mk.className = "gauge-mark"; mk.id = "gauge-mark"; g.appendChild(mk);
+}
+// decorative chart contours and soundings
+{
+  const svg = $("#contours"); let d = "";
+  for (let k = 0; k < 7; k++) { let p = `M -5 ${62 + k * 6}`; for (let x = 0; x <= 105; x += 5) p += ` L ${x} ${62 + k * 6 + Math.sin(x / 9 + k) * 2.2 + Math.sin(x / 23 + k * 2) * 3}`; d += `<path d="${p}"/>`; }
+  svg.innerHTML = d;
+  const s = $("#soundings"), r = rng(3);
+  for (let i = 0; i < 26; i++) { const e = document.createElement("span"); e.style.left = `${r() * 96}%`; e.style.top = `${56 + r() * 40}%`; e.dataset.speed = (0.05 + r() * 0.2).toFixed(2); const dep = (2 + r() * 18).toFixed(1).split("."); e.textContent = dep[0] + "₀₁₂₃₄₅₆₇₈₉"[+dep[1]]; s.appendChild(e); }
+}
+let lastStepIdx = -1;
+function storyUpdate() {
+  const el = $("#story"), rect = el.getBoundingClientRect(), vh = innerHeight || 1;
+  const raw = -rect.top / vh, prog = Number.isFinite(raw) ? Math.max(0, Math.min(STEPS.length - 1, raw)) : 0;
+  const i = Math.min(STEPS.length - 2, Math.floor(prog)), f = prog - i, k = f * f * (3 - 2 * f);
+  const a = STEPS[i], b = STEPS[i + 1], sa = stepSea[i], sb = stepSea[i + 1];
+  const level = sa.level + (sb.level - sa.level) * k, storm = a.storm + (b.storm - a.storm) * k;
+  const near = f < 0.5 ? i : i + 1, cur = STEPS[near], curSea = stepSea[near];
+  const year = Math.round(a.year + (b.year - a.year) * k);
+  $("#hud-year").textContent = year;
+  const slr = sa.slr + (sb.slr - sa.slr) * k;
+  $("#hud-sea").textContent = `sea ${slr >= 0 ? "+" : "−"}${Math.abs(slr * 100).toFixed(0)} cm vs 2024 · water ${level.toFixed(2)} m`;
+  const mark = $("#gauge-mark"); if (mark) mark.style.top = `${(1 - (level - GMIN) / (GMAX - GMIN)) * 100}%`;
+  // live bathtub flood while the water moves; held defences keep the town dry
+  const m = cur.m, crestHeld = curSea.held && (m.crest || 0) > 0;
+  let mask = null, count = 0;
+  if (!crestHeld) { mask = new Uint8Array(N); for (let j = 0; j < N; j++) if (level > HZ[j]) { mask[j] = 1; count++; } }
+  $("#hud-homes").textContent = crestHeld ? "embankment holding · 0 homes flooded" : `${count} of ${N} homes flooded`;
+  if (story) {
+    story.camera.pt.set(...a.cam.map((v, j) => v + (b.cam[j] - v) * k));
+    story.camera.tt.set(...a.tgt.map((v, j) => v + (b.tgt[j] - v) * k));
+    story.setWater(level, storm, crestHeld ? story.EMB_X - 0.45 : 40);
+    story.setHomes(mask, null, 0);
+    story.setMangroves(cur.m.mangrove_w || 0, 1);
+    story.setCrest(cur.m.crest || 0);
+    if (lastStepIdx < 0) story.jump();
+  }
+  lastStepIdx = near;
+}
+
+// parallax + nav
+const depthEls = [...document.querySelectorAll("[data-speed]")];
+function parallax() {
+  const y = scrollY;
+  depthEls.forEach((e) => { if (y < innerHeight * 1.5) e.style.transform = `translate3d(0, ${(y * +e.dataset.speed).toFixed(1)}px, 0)`; });
+  $("#contours").style.transform = `translate3d(0, ${(y * 0.12).toFixed(1)}px, 0)`;
+  $("#nav").classList.toggle("solid", y > 40);
+}
+let ticking = false;
+function onScroll() { if (ticking) return; ticking = true; requestAnimationFrame(() => { ticking = false; if (!reduce) parallax(); else $("#nav").classList.toggle("solid", scrollY > 200); storyUpdate(); }); }
+addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", onScroll);
+storyUpdate(); parallax();
+
+// reveal on scroll (content stays readable without it)
+const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.remove("pre"); io.unobserve(e.target); } }), { rootMargin: "0px 0px -8% 0px" });
+document.querySelectorAll(".reveal").forEach((el) => { const r = el.getBoundingClientRect(); if (r.top > innerHeight) { el.classList.add("pre"); io.observe(el); } });
+
+// ===================================================================== chart kit
+function mount(el, draw) {
+  const c = { w: 0 };
+  const go = () => { const w = el.clientWidth; if (w > 120 && w !== c.w) { c.w = w; el.innerHTML = ""; draw(el, w); } };
+  c.redraw = () => { c.w = 0; go(); };
+  new ResizeObserver(go).observe(el); go();
+  return c;
+}
+function legend(el, items) { el.innerHTML = items.map((i) => `<span><i class="${i.sq ? "sq" : ""}" style="background:${i.dash ? `repeating-linear-gradient(90deg,${i.c} 0 4px,transparent 4px 7px)` : i.c}"></i>${i.n}</span>`).join(""); }
+function lineChart(el, o) {
+  return mount(el, (host, W) => {
+    const H = o.height || 280, m = { t: 12, r: 16, b: 28, l: 50 };
+    const svg = d3.select(host).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("height", H);
+    const series = typeof o.series === "function" ? o.series() : o.series;
+    const bands = (typeof o.bands === "function" ? o.bands() : o.bands) || [];
+    const xs = [], ys = [];
+    series.forEach((s) => s.x.forEach((v, i) => { if (s.y[i] != null) { xs.push(v); ys.push(s.y[i]); } }));
+    bands.forEach((b) => b.x.forEach((v, i) => { xs.push(v); ys.push(b.lo[i], b.hi[i]); }));
+    (o.extraY || []).forEach((v) => ys.push(v));
+    const x = d3.scaleLinear().domain(o.xDomain || d3.extent(xs)).range([m.l, W - m.r]);
+    const y = d3.scaleLinear().domain(o.yDomain || d3.extent(ys)).nice().range([H - m.b, m.t]);
+    svg.append("g").selectAll("line").data(y.ticks(5)).join("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", (d) => y(d)).attr("y2", (d) => y(d)).style("stroke", "var(--grid)");
+    svg.append("g").selectAll("text").data(y.ticks(5)).join("text").attr("x", m.l - 6).attr("y", (d) => y(d) + 3.5).attr("text-anchor", "end").text(o.yFmt || ((d) => d));
+    svg.append("g").selectAll("text").data(x.ticks(Math.max(3, Math.floor(W / 90)))).join("text").attr("x", (d) => x(d)).attr("y", H - 8).attr("text-anchor", "middle").text((d) => String(d));
+    svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", H - m.b).attr("y2", H - m.b).style("stroke", "var(--axis)");
+    if (o.shade) {
+      svg.append("rect").attr("x", x(o.shade[0])).attr("width", Math.max(0, x(o.shade[1]) - x(o.shade[0]))).attr("y", m.t).attr("height", H - m.t - m.b).style("fill", "var(--panel-2)");
+      svg.append("text").attr("x", x(o.shade[0]) + 6).attr("y", m.t + 13).text(o.shade[2]).style("fill", "var(--ink-2)");
+    }
+    (o.hRefs || []).forEach((r) => { svg.append("line").attr("x1", m.l).attr("x2", W - m.r).attr("y1", y(r.y)).attr("y2", y(r.y)).style("stroke", r.c).style("stroke-dasharray", "3 3"); svg.append("text").attr("x", m.l + 6).attr("y", y(r.y) - 5).text(r.label).style("fill", r.c); });
+    bands.forEach((b) => svg.append("path").datum(b.x).attr("d", d3.area().x((d) => x(d)).y0((d, i) => y(b.lo[i])).y1((d, i) => y(b.hi[i]))).style("fill", b.c).style("opacity", b.o || 0.18));
+    (o.bars || []).forEach((b) => { svg.append("line").attr("x1", x(b.x)).attr("x2", x(b.x)).attr("y1", y(b.lo)).attr("y2", y(b.hi)).style("stroke", b.c).style("stroke-width", 4).style("stroke-linecap", "round"); svg.append("circle").attr("cx", x(b.x)).attr("cy", y(b.mid)).attr("r", 5).style("fill", "var(--panel)").style("stroke", b.c).style("stroke-width", 2); });
+    series.forEach((s) => svg.append("path").datum(s.y).attr("d", d3.line().defined((d) => d != null).x((d, i) => x(s.x[i])).y((d) => y(d))).style("fill", "none").style("stroke", s.c).style("stroke-width", s.w || 2).style("stroke-dasharray", s.dash || null).style("opacity", s.o || 1).style("stroke-linejoin", "round"));
+    const tip = document.createElement("div"); tip.className = "tip"; host.appendChild(tip);
+    const cross = svg.append("line").attr("y1", m.t).attr("y2", H - m.b).style("stroke", "var(--ink-2)").style("opacity", 0);
+    const dots = svg.append("g");
+    svg.append("rect").attr("x", m.l).attr("y", 0).attr("width", Math.max(0, W - m.l - m.r)).attr("height", H).style("fill", "transparent")
+      .on("pointermove", (ev) => {
+        const [px, py] = d3.pointer(ev), xv = Math.round(x.invert(px)), rows = [];
+        dots.selectAll("*").remove();
+        series.filter((s) => !s.noTip).forEach((s) => { const i = s.x.indexOf(xv); if (i < 0 || s.y[i] == null) return; rows.push(`<div class="t-r"><span><i class="dot" style="background:${s.c}"></i>${s.name}</span><b>${(o.tipFmt || ((v) => v.toFixed(1)))(s.y[i])}</b></div>`); dots.append("circle").attr("cx", x(xv)).attr("cy", y(s.y[i])).attr("r", 4).style("fill", s.c).style("stroke", "var(--panel)").style("stroke-width", 2); });
+        if (!rows.length) { tip.style.opacity = 0; return; }
+        cross.attr("x1", x(xv)).attr("x2", x(xv)).style("opacity", 0.35);
+        tip.innerHTML = `<div class="t-h">${xv}</div>${rows.join("")}`; tip.style.opacity = 1;
+        tip.style.left = `${Math.min(Math.max(px + 14, 0), W - tip.offsetWidth)}px`; tip.style.top = `${Math.max(py - 10, 0)}px`;
+      })
+      .on("pointerleave", () => { tip.style.opacity = 0; cross.style("opacity", 0); dots.selectAll("*").remove(); });
+  });
+}
+
+// ===================================================================== the record
+{
+  const rise = (lastG - OBS.gmsl[0]);
+  $("#rec-stats").innerHTML = [
+    { v: `${(rise / 10).toFixed(0)} cm`, k: "Global rise since 1880", s: `${M.first}–${M.last}, spliced record` },
+    { v: `${fmt(M.rate_obs, 1)} mm/yr`, k: "Rate now (last 10 years)", s: `20th-century average ${fmt(D.rate_20c, 1)} mm/yr` },
+    { v: `${fmt(M.mumbai_trend, 2)} mm/yr`, k: "Mumbai long-term trend", s: `global ${fmt(M.global_trend, 2)} mm/yr over the same years` },
+    { v: `${M.rows} × ${M.columns}`, k: "Rows × columns in the model table", s: "four official sources" },
+  ].map((s) => `<div class="card stat"><span class="v">${s.v}</span><span class="k">${s.k}</span><span class="s">${s.s}</span></div>`).join("");
+  $("#splice-note").textContent = `splice offset ${fmt(M.offset_mm, 0)} mm · overlap agreement ±${fmt(M.splice_rmse, 1)} mm`;
+  const yrs = OBS.year, isAlt = OBS.source.map((s) => s.startsWith("NOAA"));
+  legend($("#lg-gmsl"), [{ n: "CSIRO tide gauges", c: "var(--s1)" }, { n: "±1σ uncertainty", c: "var(--s1)", sq: 1 }, { n: "NOAA satellite altimetry", c: "var(--s2)" }]);
+  lineChart($("#c-gmsl"), { height: 300, yFmt: (d) => `${d} mm`, bands: [{ x: yrs.filter((_, i) => !isAlt[i]), lo: OBS.gmsl.filter((_, i) => !isAlt[i]).map((v, i) => v - OBS.unc[i]), hi: OBS.gmsl.filter((_, i) => !isAlt[i]).map((v, i) => v + OBS.unc[i]), c: "var(--s1)", o: 0.14 }],
+    series: [{ name: "Tide gauges", x: yrs, y: OBS.gmsl.map((v, i) => (isAlt[i] && yrs[i] > 1993 ? null : v)), c: "var(--s1)" }, { name: "Satellites", x: yrs, y: OBS.gmsl.map((v, i) => (isAlt[i] ? v : null)), c: "var(--s2)" }],
+    tipFmt: (v) => `${v.toFixed(0)} mm` });
+  legend($("#lg-mum"), [{ n: "Mumbai tide gauge", c: "var(--s3)" }, { n: "Global mean", c: "var(--s1)" }]);
+  lineChart($("#c-mum"), { height: 240, yFmt: (d) => `${d} mm`, series: [{ name: "Mumbai", x: D.mumbai.year, y: D.mumbai.rsl, c: "var(--s3)", w: 1.4 }, { name: "Global", x: yrs, y: OBS.gmsl, c: "var(--s1)" }], tipFmt: (v) => `${v.toFixed(0)} mm` });
+  $("#mum-note").textContent = `Mumbai's relative sea level rose ${fmt(M.mumbai_trend, 2)} mm/yr against ${fmt(M.global_trend, 2)} mm/yr globally, an offset of ${fmt(M.beta, 2)} mm/yr from land motion and regional ocean effects. The simulator adds this offset to the global forecast.`;
+  $("#dq").innerHTML = `<thead><tr><th>Source</th><th>Variable</th><th class="n">Rows</th><th class="n">Cols</th><th>Years</th><th class="n">Valid</th><th class="n">Missing</th></tr></thead><tbody>` +
+    D.quality.map((q) => `<tr><td>${q.Source}</td><td>${q.Variable}</td><td class="n">${q["Raw rows"]}</td><td class="n">${q["Raw columns"]}</td><td class="num">${q["First year"]}–${q["Last year"]}</td><td class="n">${q["Valid years"]}</td><td class="n">${q["Missing years"]}</td></tr>`).join("") + "</tbody>";
+}
+
+// ===================================================================== the forecast
+let selModel = "C · Hybrid + Random Forest";
+const MODEL_COL = { "A · Linear Regression": "var(--s1)", "A · SVR": "var(--s7)", "A · Random Forest": "var(--s5)", "B · Linear Regression": "var(--s2)", "B · SVR": "var(--s4)", "B · Random Forest": "var(--s8)", "C · Hybrid + SVR": "var(--s7)", "C · Hybrid + Random Forest": "var(--s3)" };
+{
+  $("#law-pairs").innerHTML = [
+    ["a, rise rate per °C of warming", `${fmt(M.a, 2)} mm/yr/°C`, "Rahmstorf 2007: 3.4"],
+    ["T₀, temperature of a stable sea", `${M.T0 >= 0 ? "+" : "−"}${fmt(Math.abs(M.T0), 2)} °C`, "vs 1880–1900"],
+    ["Model rate for 2024", `${fmt(M.rate_now, 1)} mm/yr`, `satellites: ${fmt(M.rate_obs, 1)}`],
+  ].map(([k, v, s]) => `<div class="pair"><span>${k} <span class="muted" style="font-size:12px">· ${s}</span></span><b>${v}</b></div>`).join("");
+  const R = D.results, best = Math.min(...R.map((r) => r.MAE));
+  const table = () => {
+    $("#metrics").innerHTML = `<thead><tr><th>Model</th><th class="n">MAE</th><th class="n">MSE</th><th class="n">RMSE</th><th class="n">R²</th></tr></thead><tbody>` +
+      R.map((r) => `<tr data-m="${r.Model}" tabindex="0" class="${r.MAE === best ? "best" : ""} ${r.Model === selModel ? "sel" : ""}"><td><span class="tag ${r.Model[0]}">${r.Model[0]}</span> ${r.Model.slice(4)}</td><td class="n">${fmt(r.MAE, 2)}</td><td class="n">${fmt(r.MSE, 1)}</td><td class="n">${fmt(r.RMSE, 2)}</td><td class="n ${r["R²"] < 0 ? "neg" : ""}">${fmt(r["R²"], 3)}</td></tr>`).join("") + "</tbody>";
+  };
+  table();
+  const pick = (e) => { const tr = e.target.closest("tr[data-m]"); if (!tr) return; selModel = tr.dataset.m; table(); pred.redraw(); };
+  $("#metrics").addEventListener("click", pick); $("#metrics").addEventListener("keydown", (e) => { if (e.key === "Enter") pick(e); });
+  const pred = lineChart($("#c-pred"), { height: 300, shade: [M.train_end + 0.5, M.last + 0.5, "test: never seen in training"], yFmt: (d) => `${d} mm`, tipFmt: (v) => `${v.toFixed(0)} mm`,
+    series: () => {
+      const r = R.find((q) => q.Model === selModel), c = MODEL_COL[selModel];
+      $("#pred-title").textContent = `${selModel.slice(4)} · predicted vs observed`;
+      $("#pred-note").textContent = `Test MAE ${fmt(r.MAE, 1)} mm · R² ${fmt(r["R²"], 3)}`;
+      legend($("#lg-pred"), [{ n: "Observed", c: "var(--ink)" }, { n: "Model", c }]);
+      return [{ name: "Observed", x: OBS.year, y: OBS.gmsl, c: "var(--ink)", w: 1.4 }, { name: "Model", x: OBS.year, y: D.preds[selModel], c, w: 2.2 }];
+    } });
+  legend($("#lg-proj"), [{ n: "Observed", c: "var(--ink)" }, ...SCENS.map((s) => ({ n: s, c: SC_COL[s] })), { n: "IPCC AR6 likely", c: "var(--muted)", sq: 1 }]);
+  lineChart($("#c-proj"), { height: 300, xDomain: [1950, 2112], yFmt: (d) => `${d} mm`, tipFmt: (v) => `${v.toFixed(0)} mm`,
+    bands: SCENS.map((s) => ({ x: D.projections[s].year, lo: D.projections[s].lo, hi: D.projections[s].hi, c: SC_COL[s], o: 0.14 })),
+    series: [{ name: "Observed", x: OBS.year.filter((y) => y >= 1950), y: OBS.gmsl.slice(OBS.year.indexOf(1950)), c: "var(--ink)", w: 1.6 }, ...SCENS.map((s) => ({ name: s, x: D.projections[s].year, y: D.projections[s].gmsl, c: SC_COL[s] }))],
+    bars: SCENS.map((s, i) => ({ x: 2104 + i * 3, lo: D.ar6[s][1] * 1000, hi: D.ar6[s][2] * 1000, mid: D.ar6[s][0] * 1000, c: SC_COL[s] })), extraY: SCENS.map((s) => D.ar6[s][2] * 1000) });
+  const trap = Object.fromEntries(D.trap.map((t) => [t.split, t]));
+  const rfA = R.find((r) => r.Model === "A · Random Forest"), hyb = R.find((r) => r.Model === "C · Hybrid + Random Forest");
+  $("#checks").innerHTML = [
+    { v: fmt(trap["Random split (leaky)"]["R²"], 3), k: "RF R², shuffled years", s: "looks perfect, leaks neighbours" },
+    { v: `<span class="neg">${fmt(rfA["R²"], 2)}</span>`, k: "Same RF, honest future test", s: "flatlines above its training range" },
+    { v: fmt(hyb["R²"], 3), k: "RF inside the physics hybrid", s: `MAE ${fmt(hyb.MAE, 1)} mm on 2000–2024` },
+    { v: `${fmt(M.rate_now, 1)}`, k: "Model rate now, mm/yr", s: `satellites measure ${fmt(M.rate_obs, 1)}` },
+  ].map((s) => `<div class="stat" style="border-top:2px solid var(--rule);padding-top:10px"><span class="v" style="font-size:30px">${s.v}</span><span class="k">${s.k}</span><span class="s">${s.s}</span></div>`).join("");
+  const p = (s) => D.projections[s].gmsl.at(-1) / 1000;
+  $("#proj-note").textContent = `2100: ${SCENS.map((s) => `${s} +${fmt(p(s), 2)} m (AR6 ${D.ar6[s][0]} m)`).join(" · ")}. Inside the AR6 likely range for the low and middle pathways; below it under high emissions, where a law calibrated on the 20th century cannot anticipate ice-sheet speed-up.`;
+}
+
+// ===================================================================== simulator
+const simState = { year: 2070, scen: "SSP2-4.5", def: "Hybrid (mangrove + low embankment)", m: { ...HYBRID }, T: 100, storm: true };
+const sim = makeDiorama($("#simcanvas"), () => { $("#webgl-off2").hidden = false; });
+if (sim) {
+  // orbit controls
+  let orbit = { th: -0.9, ph: 0.62, r: 46 }, drag = null;
+  const target = [6, 2, 0];
+  const place = () => { const { th, ph, r } = orbit; sim.camera.pt.set(target[0] + r * Math.sin(th) * Math.cos(ph), target[1] + r * Math.sin(ph), target[2] + r * Math.cos(th) * Math.cos(ph)); sim.camera.tt.set(...target); };
+  place(); sim.jump();
+  const cv = $("#simcanvas");
+  cv.addEventListener("pointerdown", (e) => { vel = 0; drag = { x: e.clientX, y: e.clientY, th: orbit.th, ph: orbit.ph }; cv.setPointerCapture(e.pointerId); });
+  let vel = 0;
+  cv.addEventListener("pointermove", (e) => { if (!drag) return; const th = drag.th - (e.clientX - drag.x) * 0.006; vel = th - orbit.th; orbit.th = th; orbit.ph = Math.max(0.12, Math.min(1.3, drag.ph + (e.clientY - drag.y) * 0.005)); place(); });
+  // release with inertia: the view keeps turning and eases to a stop
+  const coast = () => { if (drag || Math.abs(vel) < 2e-4) return; orbit.th += vel; vel *= 0.92; place(); requestAnimationFrame(coast); };
+  const end = () => { drag = null; if (!reduce) requestAnimationFrame(coast); }; cv.addEventListener("pointerup", end); cv.addEventListener("pointercancel", end);
+  cv.addEventListener("wheel", (e) => { if (!e.ctrlKey) return; e.preventDefault(); orbit.r = Math.max(22, Math.min(80, orbit.r + e.deltaY * 0.03)); place(); }, { passive: false });
+}
+const ICON = { ok: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.5 11.2 3.3 8l1.1-1.1 2.1 2.1 5-5L12.6 5z"/></svg>', warn: '<svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1.5 15 14H1zM7.3 6v4h1.4V6zm0 5v1.4h1.4V11z"/></svg>' };
+$("#seg-scen").innerHTML = SCENS.map((s) => `<button type="button" data-s="${s}" aria-pressed="${s === simState.scen}">${s}</button>`).join("");
+$("#seg-storm").innerHTML = [10, 50, 100, 500].map((T) => `<button type="button" data-t="${T}" aria-pressed="${T === simState.T}">1-in-${T}</button>`).join("");
+const DEF_TXT = { "No defence": "the baseline", "Mangrove belt": "400 m living belt", "Embankment": "4.5 m crest", "Raised houses": "homes on 1 m plinths", "Hybrid (mangrove + low embankment)": "300 m mangroves + 3.8 m embankment" };
+$("#defs").innerHTML = Object.keys(D.measures).map((n, i) => `<button type="button" class="def ${i === 4 ? "wide" : ""}" data-d="${n}" aria-pressed="${n === simState.def}"><b><i style="background:${DEF_COL[n]}"></i>${DEF_SHORT[n]}</b><span>${DEF_TXT[n]}</span></button>`).join("");
+const sl = { year: $("#sl-year"), mw: $("#sl-mw"), crest: $("#sl-crest"), plinth: $("#sl-plinth") };
+function syncSliders() { sl.year.value = simState.year; sl.mw.value = simState.m.mangrove_w || 0; sl.crest.value = simState.m.crest || 0; sl.plinth.value = simState.m.plinth || 0; }
+const usd = (v) => (Math.abs(v) >= 1e6 ? `$${(v / 1e6).toFixed(v >= 1e7 ? 1 : 2)}M` : `$${(v / 1e3).toFixed(0)}k`);
+let eadChart;
+function simUpdate() {
+  const { year, scen, m, T } = simState;
+  $("#v-year").textContent = year; $("#v-mw").textContent = m.mangrove_w ? `${m.mangrove_w} m` : "none";
+  $("#v-crest").textContent = m.crest ? `${(+m.crest).toFixed(1)} m` : "none"; $("#v-plinth").textContent = m.plinth ? `${(+m.plinth).toFixed(1)} m` : "none";
+  const r = run(scen, m), i = r.years.indexOf(year), slr = r.slr[i], h = r.health[i];
+  const ev = event(slr, T, m, h), fin = finance(scen, m), base = run(scen, {});
+  const stormOn = simState.storm;
+  const calmLevel = slr + S.sea.mhhw;
+  // 3D
+  if (sim) {
+    const level = stormOn ? ev.level : calmLevel;
+    const blocked = stormOn ? ev.held : (m.crest || 0) > calmLevel;
+    sim.setWater(level, stormOn ? Math.min(1, 0.5 + T / 200) : 0, blocked && m.crest ? sim.EMB_X - 0.45 : 40);
+    let mask = null; if (stormOn && !ev.held) mask = ev.mask;
+    sim.setHomes(mask, stormOn && !ev.held ? ev.depth : null, m.plinth || 0);
+    sim.setMangroves(m.mangrove_w || 0, h);
+    sim.setCrest(m.crest || 0);
+  }
+  const chip = $("#sim-state");
+  if (!stormOn) { chip.className = "chip"; chip.textContent = `Calm high tide · ${year}`; }
+  else if (ev.held) { chip.className = "chip good"; chip.innerHTML = `${ICON.ok}Embankment holds`; }
+  else if (ev.flooded === 0) { chip.className = "chip good"; chip.innerHTML = `${ICON.ok}No homes flooded`; }
+  else { chip.className = "chip crit"; chip.innerHTML = `${ICON.warn}${ev.overtopped ? "Overtopped · " : ""}${ev.flooded} homes flooded`; }
+  $("#sim-level").textContent = `water ${(stormOn ? ev.level : calmLevel).toFixed(2)} m · sea ${slr >= 0 ? "+" : "−"}${Math.abs(slr * 100).toFixed(0)} cm`;
+  const fail = r.f100.findIndex((f) => f > 0);
+  $("#kpis").innerHTML = [
+    { k: `Homes flooded, 1-in-${T}`, v: stormOn ? `${ev.held ? 0 : ev.flooded}` : "—", s: `of ${N} · ${Math.round((ev.held ? 0 : ev.flooded) * S.town.people_per_home).toLocaleString()} people` },
+    { k: "Expected annual damage", v: usd(r.ead[i]), s: `no defence: ${usd(base.ead[i])}` },
+    { k: "Benefit-cost ratio", v: fin.bcr == null ? "—" : fmt(fin.bcr, 1), s: `2025–2100 at ${(S.finance.discount * 100).toFixed(0)} % · cost ${usd(fin.cost)}` },
+    { k: m.mangrove_w ? "Mangrove health" : "CO₂ captured", v: m.mangrove_w ? `${Math.round(h * 100)} %` : "0 t", s: m.mangrove_w ? `${(r.co2 / 1000).toFixed(1)} kt CO₂ stored by 2100` : "no mangroves planted" },
+  ].map((q) => `<div class="kpi"><span class="k">${q.k}</span><span class="v">${q.v}</span><span class="s">${q.s}</span></div>`).join("");
+  // verdict: when does this defence stop holding a 1-in-100 storm?
+  const drown = r.health.findIndex((x) => x < 1);
+  let v = "";
+  if (!m.mangrove_w && !m.crest && !m.plinth) v = `With no defence, a 1-in-100 storm floods ${r.f100[0]} homes in 2025 and ${r.f100.at(-1)} by 2100 under ${scen}.`;
+  else {
+    if (m.crest) v += fail < 0 ? `The embankment holds a 1-in-100 storm all the way to 2100 under ${scen}. ` : fail === 0 ? `A 1-in-100 storm already overtops this embankment in 2025. ` : `The embankment holds a 1-in-100 storm until <b>${r.years[fail - 1]}</b>, then fails all at once. `;
+    else if (m.mangrove_w) v += `Mangroves cut flooding from a 1-in-100 storm to ${r.f100.at(-1)} homes by 2100 (no defence: ${base.f100.at(-1)}). `;
+    if (m.mangrove_w) v += drown < 0 ? `The belt keeps pace with the sea and survives to 2100.` : `From <b>${r.years[drown]}</b> the sea rises faster than ${S.mangrove.drown_rate_mm_yr} mm/yr and the belt begins to drown.`;
+    if (m.plinth && !m.crest) v += `Raised homes still get wet, but expected damage falls from ${usd(base.ead.at(-1))} to ${usd(r.ead.at(-1))} a year by 2100.`;
+  }
+  $("#verdict").innerHTML = v;
+  $("#ead-note").textContent = `${scen} · ${DEF_SHORT[simState.def] || "custom"}`;
+  if (eadChart) eadChart.redraw();
+}
+legend($("#lg-ead"), [{ n: "No defence", c: "var(--ink-2)" }, { n: "Your defence", c: "var(--tide)" }]);
+eadChart = lineChart($("#c-ead"), { height: 240, yFmt: (d) => usd(d), tipFmt: (v) => usd(v),
+  series: () => { const r = run(simState.scen, simState.m), b = run(simState.scen, {}); return [{ name: "No defence", x: b.years, y: b.ead, c: "var(--ink-2)", w: 1.6, dash: "4 3" }, { name: "Your defence", x: r.years, y: r.ead, c: "var(--tide)", w: 2.4 }]; } });
+function setDef(name) {
+  simState.def = name; simState.m = { ...D.measures[name] };
+  $("#defs").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.d === name));
+  syncSliders(); simUpdate();
+}
+$("#defs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) setDef(b.dataset.d); });
+$("#seg-scen").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; simState.scen = b.dataset.s; $("#seg-scen").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); simUpdate(); });
+$("#seg-storm").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; simState.T = +b.dataset.t; simState.storm = true; $("#seg-storm").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); simUpdate(); });
+let raf = 0;
+const custom = () => {
+  simState.m = {}; const mw = +sl.mw.value, cr = +sl.crest.value, pl = +sl.plinth.value;
+  if (mw > 0) simState.m.mangrove_w = mw; if (cr > 1.2) simState.m.crest = cr; if (pl > 0) simState.m.plinth = pl;
+  const match = Object.entries(D.measures).find(([, v]) => JSON.stringify(v) === JSON.stringify(simState.m));
+  simState.def = match ? match[0] : "Custom";
+  $("#defs").querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.d === simState.def));
+  cancelAnimationFrame(raf); raf = requestAnimationFrame(simUpdate);
+};
+sl.mw.addEventListener("input", custom); sl.crest.addEventListener("input", custom); sl.plinth.addEventListener("input", custom);
+sl.year.addEventListener("input", () => { simState.year = +sl.year.value; cancelAnimationFrame(raf); raf = requestAnimationFrame(simUpdate); });
+$("#storm-btn").addEventListener("click", () => { simState.storm = true; simUpdate(); });
+$("#calm-btn").addEventListener("click", () => { simState.storm = false; simUpdate(); });
+syncSliders(); simUpdate();
+
+// ===================================================================== comparison
+let cmpScen = "SSP2-4.5";
+$("#seg-cmp").innerHTML = SCENS.map((s) => `<button type="button" data-s="${s}" aria-pressed="${s === cmpScen}">${s}</button>`).join("");
+const cliff = lineChart($("#c-cliff"), { height: 280, yFmt: (d) => d, tipFmt: (v) => `${v.toFixed(0)} homes`,
+  series: () => Object.keys(D.measures).map((n) => { const r = run(cmpScen, D.measures[n]); return { name: DEF_SHORT[n], x: r.years, y: r.f100, c: DEF_COL[n], w: n === "No defence" ? 1.6 : 2.2, dash: n === "No defence" ? "4 3" : null }; }) });
+legend($("#lg-cliff"), Object.keys(D.measures).map((n) => ({ n: DEF_SHORT[n], c: DEF_COL[n], dash: n === "No defence" })));
+function cards() {
+  const rows = D.comparison.filter((c) => c.Scenario === cmpScen);
+  const bestBcr = Math.max(...rows.filter((r) => r.BCR != null).map((r) => r.BCR));
+  $("#dcards").innerHTML = rows.map((c) => {
+    const r = run(cmpScen, D.measures[c.Defence]), fail = r.f100.findIndex((f) => f > 0), drown = r.health.findIndex((x) => x < 1), m = D.measures[c.Defence];
+    let chip = "";
+    if (c.Defence === "No defence") chip = `<span class="chip crit">${ICON.warn}Floods every decade</span>`;
+    else if (m.crest) chip = fail < 0 ? `<span class="chip good">${ICON.ok}Holds to 2100</span>` : `<span class="chip warn">${ICON.warn}Fails from ${r.years[fail]}</span>`;
+    else if (m.mangrove_w) chip = drown < 0 ? `<span class="chip good">${ICON.ok}Survives to 2100</span>` : `<span class="chip warn">${ICON.warn}Drowns from ${r.years[drown]}</span>`;
+    else chip = `<span class="chip warn">${ICON.warn}Wet, but less damage</span>`;
+    return `<div class="card dcard"><div class="top"><i style="background:${DEF_COL[c.Defence]}"></i><h3>${DEF_SHORT[c.Defence]}</h3></div>${chip}<dl>
+      <div><dt>Homes flooded, 1-in-100, 2050</dt><dd>${c["Homes flooded 1-in-100 (2050)"]}</dd></div>
+      <div><dt>Homes flooded, 1-in-100, 2100</dt><dd>${c["Homes flooded 1-in-100 (2100)"]}</dd></div>
+      <div><dt>Damage per year, 2100</dt><dd>${usd(c["EAD 2100 (USD M)"] * 1e6)}</dd></div>
+      <div><dt>Up-front cost</dt><dd>${c["Capex (USD M)"] ? usd(c["Capex (USD M)"] * 1e6) : "—"}</dd></div>
+      <div><dt>Benefit-cost ratio</dt><dd>${c.BCR == null ? "—" : fmt(c.BCR, 1) + (c.BCR === bestBcr ? " ★" : "")}</dd></div>
+      <div><dt>CO₂ stored by 2100</dt><dd>${c["CO₂ captured 2025–2100 (kt)"] ? fmt(c["CO₂ captured 2025–2100 (kt)"], 1) + " kt" : "—"}</dd></div></dl></div>`;
+  }).join("");
+}
+cards();
+$("#seg-cmp").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; cmpScen = b.dataset.s; $("#seg-cmp").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b)); cards(); cliff.redraw(); });
+
+// ===================================================================== method
+$("#assume").innerHTML = "<tbody>" + [
+  ["Ground at the shore / slope inland", `${S.town.shore_elev} m · ${(S.town.slope * 100).toFixed(1)} %`],
+  ["Homes · value each (illustrative)", `${S.town.homes} · $${(S.town.home_value_usd / 1000).toFixed(0)}k`],
+  ["High tide (MHHW) above mean sea", `${S.sea.mhhw} m`],
+  ["Storm surge, Gumbel μ / β", `${S.sea.surge_mu} / ${S.sea.surge_beta} m · 1-in-100 = ${surge(100).toFixed(2)} m`],
+  ["Mangrove wave decay · surge cut", `${S.mangrove.k_wave}/m · ${S.mangrove.surge_cut_per_km} m per km`],
+  ["Mangrove drowning threshold", `${S.mangrove.drown_rate_mm_yr} mm/yr (Saintilan et al. 2020)`],
+  ["Mangrove carbon uptake", `${S.mangrove.co2_t_per_ha_yr} t CO₂/ha/yr (Alongi 2014)`],
+  ["Embankment cost", `$${(S.embankment.cost_usd_per_m_per_km / 1e6).toFixed(1)}M per metre of crest per km`],
+  ["Discount rate", `${(S.finance.discount * 100).toFixed(0)} %`],
+].map(([k, v]) => `<tr><td>${k}</td><td class="n">${v}</td></tr>`).join("") + "</tbody>";
+$("#f-gen").textContent = M.generated;
+})();
+</script>

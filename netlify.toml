@@ -1,0 +1,10 @@
+# Netlify config for the Tideline website (static, no build step).
+# Refresh site/index.html after re-running the notebook:  python web/build_web.py && cp web/index.html site/
+[build]
+  publish = "site"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

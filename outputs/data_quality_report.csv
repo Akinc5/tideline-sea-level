@@ -1,0 +1,5 @@
+Source,Variable,Units,Raw rows,Raw columns,First year,Last year,Valid years,Missing years,Min,Max
+CSIRO,GMSL reconstruction,mm,140,3,1880,2019,140,0,-41.5,227.3
+NOAA LSA,GMSL satellite altimetry,mm (annual mean),1557,6,1993,2024,32,0,-19.4,81.9
+PSMSL,Mumbai relative sea level,mm (RLR datum),147,4,1878,2024,122,25,6919.0,7211.0
+NASA GISS,Global temperature,°C vs 1951–80,147,19,1880,2025,146,0,-0.5,1.3

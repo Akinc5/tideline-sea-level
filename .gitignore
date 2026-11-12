@@ -1,0 +1,9 @@
+.netlify/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+# full-size screenshots (the report uses the compressed copies in screens_small/)
+report/screens/
+# university template copy, not part of the project
+report/template_srm.docx
+~$*
